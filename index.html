@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#FFF6F0" />
-  <title>bobyak 🍚 우리 밥약 달력</title>
+  <title>bobyak 🍚 밥약 달력</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>" />
   <!-- 로컬 스타일 먼저 (네트워크 없어도 즉시 적용) -->
   <link rel="stylesheet" href="styles.css" />
   <!-- 구글 폰트는 비동기로 — 없으면 시스템 폰트로 폴백, 화면을 막지 않음 -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Dongle:wght@400;700&display=swap"
         media="print" onload="this.media='all'" />
 </head>
 <body>
@@ -19,35 +19,71 @@
     <!-- 헤더 -->
     <header class="header">
       <h1 class="logo">🍚 bobyak</h1>
-      <p class="subtitle" id="groupName">우리 밥약 멤버들</p>
+      <p class="subtitle" id="subtitle">밥 먹고 합시다!</p>
     </header>
 
-    <!-- 나는 누구? -->
-    <section class="me-picker card">
-      <div class="me-label">나는 누구?</div>
-      <div class="chips" id="memberChips"><!-- JS --></div>
+    <!-- ============ 화면 A: 모임 만들기 ============ -->
+    <section id="screenCreate" class="screen hidden">
+      <div class="card">
+        <h2 class="card-h">새 모임 만들기 🎉</h2>
+        <p class="hint">모임을 만들면 우리만의 달력 링크가 생겨요.<br/>링크를 단톡방에 공유하면 끝!</p>
+
+        <label class="field-label">모임 이름</label>
+        <input id="groupNameInput" class="text-input" maxlength="20" placeholder="예: 점심크루 🍜" />
+
+        <label class="field-label">멤버 추가</label>
+        <div class="member-add">
+          <input id="memberNameInput" class="text-input" maxlength="10" placeholder="이름 입력 후 Enter" />
+          <button id="addMemberBtn" class="add-btn">추가</button>
+        </div>
+        <div class="chips" id="newMemberChips"></div>
+
+        <button id="createBtn" class="primary-btn">모임 만들기 ✨</button>
+      </div>
+
+      <div class="card recent hidden" id="recentCard">
+        <h2 class="card-h">최근 본 모임</h2>
+        <div id="recentList" class="recent-list"></div>
+      </div>
     </section>
 
-    <!-- 달력 -->
-    <section class="calendar card">
-      <div class="cal-nav">
-        <button class="nav-btn" id="prevBtn" aria-label="이전 달">‹</button>
-        <div class="cal-title" id="calTitle">2026년 6월</div>
-        <button class="nav-btn" id="nextBtn" aria-label="다음 달">›</button>
+    <!-- ============ 화면 B: 모임 달력 ============ -->
+    <section id="screenView" class="screen hidden">
+      <!-- 공유 바 -->
+      <div class="share-bar card">
+        <div class="share-text">📣 이 링크를 단톡방에 공유하세요</div>
+        <button id="copyLinkBtn" class="copy-btn">🔗 링크 복사</button>
       </div>
-      <button class="today-btn" id="todayBtn">오늘로</button>
 
-      <div class="weekdays">
-        <span class="sun">일</span><span>월</span><span>화</span>
-        <span>수</span><span>목</span><span>금</span><span class="sat">토</span>
-      </div>
-      <div class="days" id="daysGrid"><!-- JS --></div>
-    </section>
+      <!-- 나는 누구? -->
+      <section class="me-picker card">
+        <div class="me-head">
+          <span class="me-label">나는 누구?</span>
+          <button id="addMemberView" class="mini-btn">＋ 멤버</button>
+        </div>
+        <div class="chips" id="memberChips"></div>
+      </section>
 
-    <!-- 범례 -->
-    <section class="legend card">
-      <div class="legend-title">멤버 색깔</div>
-      <div class="legend-items" id="legend"><!-- JS --></div>
+      <!-- 달력 -->
+      <section class="calendar card">
+        <div class="cal-nav">
+          <button class="nav-btn" id="prevBtn" aria-label="이전 달">‹</button>
+          <div class="cal-title" id="calTitle">2026년 6월</div>
+          <button class="nav-btn" id="nextBtn" aria-label="다음 달">›</button>
+        </div>
+        <button class="today-btn" id="todayBtn">오늘로</button>
+        <div class="weekdays">
+          <span class="sun">일</span><span>월</span><span>화</span>
+          <span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+        </div>
+        <div class="days" id="daysGrid"></div>
+      </section>
+
+      <!-- 범례 -->
+      <section class="legend card">
+        <div class="legend-title">멤버 색깔</div>
+        <div class="legend-items" id="legend"></div>
+      </section>
     </section>
 
     <footer class="footer">

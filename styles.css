@@ -1,5 +1,6 @@
 /* ===========================================================
    bobyak 🍚  — 귀엽고 말랑한 밥약 달력
+   폰트: 제목 Jua / 본문 Gowun Dodum  (바꾸려면 아래 변수만 수정)
    =========================================================== */
 
 :root {
@@ -13,34 +14,41 @@
   --sat: #6aa9ff;
   --shadow: 0 8px 24px rgba(214, 165, 140, 0.18);
   --radius: 22px;
+
+  /* 폰트 — 다른 귀여운 폰트로 바꾸려면 여기만 수정!
+     추천: 제목 "Jua", 본문 "Gowun Dodum"(깔끔) / "Dongle"(더 동글) */
+  --font-head: "Jua", system-ui, sans-serif;
+  --font-body: "Gowun Dodum", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   margin: 0;
-  font-family: "Gaegu", system-ui, sans-serif;
+  font-family: var(--font-body);
   background: radial-gradient(circle at 20% 0%, #fff0e8, var(--bg) 60%);
   color: var(--ink);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   padding: 18px 14px 40px;
+  font-size: 16px;
 }
 
 .app { width: 100%; max-width: 440px; }
+.hidden { display: none !important; }
 
 /* ---------- 헤더 ---------- */
 .header { text-align: center; margin: 10px 0 18px; }
 .logo {
-  font-family: "Jua", sans-serif;
+  font-family: var(--font-head);
   font-size: 2.6rem;
   margin: 0;
   color: var(--ink);
   letter-spacing: -1px;
   filter: drop-shadow(0 2px 0 #ffe0d0);
 }
-.subtitle { margin: 2px 0 0; color: var(--ink-soft); font-size: 1.1rem; }
+.subtitle { margin: 4px 0 0; color: var(--ink-soft); font-size: 1rem; }
 
 /* ---------- 카드 공통 ---------- */
 .card {
@@ -50,23 +58,76 @@ body {
   padding: 18px;
   margin-bottom: 16px;
 }
+.card-h { font-family: var(--font-head); font-size: 1.35rem; margin: 0 0 8px; }
+.hint { color: var(--ink-soft); font-size: .95rem; line-height: 1.5; margin: 0 0 16px; }
+
+/* ---------- 모임 만들기 ---------- */
+.field-label { display: block; font-weight: 700; font-size: .95rem; margin: 12px 0 6px; }
+.text-input {
+  width: 100%; border: 2px solid var(--line); border-radius: 14px;
+  padding: 12px 14px; font-family: var(--font-body); font-size: 1.05rem;
+  color: var(--ink); background: #fffdfb; outline: none;
+  transition: border-color .15s;
+}
+.text-input:focus { border-color: var(--accent); }
+.member-add { display: flex; gap: 8px; }
+.member-add .text-input { flex: 1; }
+.add-btn {
+  border: none; background: #fff3ec; color: var(--ink);
+  border-radius: 14px; padding: 0 18px; font-family: var(--font-body);
+  font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform .1s, background .15s;
+}
+.add-btn:active { transform: scale(.92); background: #ffe6da; }
+.primary-btn {
+  width: 100%; margin-top: 18px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #ff9fb6, #ff8fab);
+  color: #fff; font-family: var(--font-head); font-size: 1.25rem;
+  padding: 14px; border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(255,143,171,.4);
+  transition: transform .1s, box-shadow .15s;
+}
+.primary-btn:active { transform: scale(.97); }
+.primary-btn:disabled { opacity: .5; box-shadow: none; cursor: default; }
+
+.recent-list { display: flex; flex-direction: column; gap: 8px; }
+.recent-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fdf7f3; border-radius: 14px; padding: 12px 14px;
+  text-decoration: none; color: var(--ink); font-weight: 700;
+  transition: transform .1s, background .15s;
+}
+.recent-item:active { transform: scale(.97); background: #fbeee6; }
+.recent-item .go { color: var(--accent); }
+
+/* ---------- 공유 바 ---------- */
+.share-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: linear-gradient(135deg, #fff4ee, #ffeef4);
+}
+.share-text { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.copy-btn {
+  border: none; background: #fff; color: var(--ink); cursor: pointer;
+  border-radius: 999px; padding: 9px 14px; font-family: var(--font-body);
+  font-weight: 700; font-size: .92rem; white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(214,165,140,.25); transition: transform .1s;
+}
+.copy-btn:active { transform: scale(.93); }
 
 /* ---------- 나는 누구 ---------- */
-.me-label { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+.me-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.me-label { font-size: 1.15rem; font-weight: 700; }
+.mini-btn {
+  border: 2px dashed var(--line); background: #fff; color: var(--ink-soft);
+  border-radius: 999px; padding: 5px 12px; font-family: var(--font-body);
+  font-size: .85rem; font-weight: 700; cursor: pointer; transition: transform .1s;
+}
+.mini-btn:active { transform: scale(.92); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  border: 2px solid var(--line);
-  background: #fff;
-  border-radius: 999px;
-  padding: 7px 16px;
-  font-family: inherit;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--ink);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  border: 2px solid var(--line); background: #fff; border-radius: 999px;
+  padding: 8px 16px; font-family: var(--font-body); font-size: 1.02rem;
+  font-weight: 700; color: var(--ink); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
   transition: transform .12s, box-shadow .12s, border-color .12s;
 }
 .chip:active { transform: scale(.94); }
@@ -77,48 +138,35 @@ body {
   box-shadow: 0 4px 12px color-mix(in srgb, var(--c) 35%, transparent);
   transform: translateY(-1px);
 }
+.chip .x { margin-left: 2px; color: var(--ink-soft); font-weight: 700; }
 
 /* ---------- 달력 ---------- */
-.cal-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 4px;
-}
-.cal-title { font-family: "Jua", sans-serif; font-size: 1.5rem; }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.cal-title { font-family: var(--font-head); font-size: 1.5rem; }
 .nav-btn {
   border: none; background: #fff3ec; color: var(--ink);
   width: 40px; height: 40px; border-radius: 14px;
-  font-size: 1.6rem; line-height: 1; cursor: pointer;
-  transition: transform .1s, background .15s;
+  font-size: 1.6rem; line-height: 1; cursor: pointer; transition: transform .1s, background .15s;
 }
 .nav-btn:active { transform: scale(.9); background: #ffe6da; }
 .today-btn {
-  display: block; margin: 0 auto 12px; border: none;
-  background: transparent; color: var(--accent);
-  font-family: inherit; font-size: .95rem; font-weight: 700;
-  cursor: pointer; text-decoration: underline dotted;
+  display: block; margin: 0 auto 12px; border: none; background: transparent;
+  color: var(--accent); font-family: var(--font-body); font-size: .92rem;
+  font-weight: 700; cursor: pointer; text-decoration: underline dotted;
 }
 
-.weekdays, .days {
-  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
-}
+.weekdays, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .weekdays { margin-bottom: 6px; }
-.weekdays span {
-  text-align: center; font-weight: 700; font-size: .95rem; color: var(--ink-soft);
-}
+.weekdays span { text-align: center; font-weight: 700; font-size: .95rem; color: var(--ink-soft); }
 .weekdays .sun { color: var(--sun); }
 .weekdays .sat { color: var(--sat); }
 
 .day {
-  position: relative;
-  aspect-ratio: 1 / 1.05;
-  border-radius: 14px;
-  background: #fdf7f3;
-  border: 2px solid transparent;
+  position: relative; aspect-ratio: 1 / 1.05; border-radius: 14px;
+  background: #fdf7f3; border: 2px solid transparent;
   display: flex; flex-direction: column; align-items: center;
-  padding: 5px 3px 3px;
-  cursor: pointer;
+  padding: 5px 3px 3px; cursor: pointer; overflow: hidden;
   transition: transform .1s, background .15s, border-color .15s;
-  overflow: hidden;
 }
 .day:active { transform: scale(.93); }
 .day.empty { background: transparent; cursor: default; }
@@ -127,20 +175,17 @@ body {
 .day.sat .num { color: var(--sat); }
 .day.today { border-color: var(--accent); background: #fff; }
 .day.today .num::after {
-  content: "오늘"; display: block; font-size: .55rem; color: var(--accent);
-  margin-top: -2px;
+  content: "오늘"; display: block; font-size: .55rem; color: var(--accent); margin-top: -2px;
 }
 .day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
 
-/* 부재 점들 */
 .dots {
   display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
   align-content: flex-start; margin-top: 4px; width: 100%;
 }
 .dots .pdot {
   width: 11px; height: 11px; border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0,0,0,.12);
-  animation: pop .25s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,.12); animation: pop .25s ease;
 }
 @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
 
@@ -160,9 +205,8 @@ body {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;
   font-size: .95rem; font-weight: 700; opacity: 0; pointer-events: none;
-  transition: opacity .25s, transform .25s; z-index: 50;
+  transition: opacity .25s, transform .25s; z-index: 50; max-width: 86%; text-align: center;
 }
-.toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
+.toast.show { opacity: .96; transform: translateX(-50%) translateY(0); }
 
-/* 이름 선택 안내(미선택 시 달력 흐리게) */
 .calendar.locked .days { opacity: .45; filter: grayscale(.3); }
