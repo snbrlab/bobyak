@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FFF6F0" />
+  <title>bobyak 🍚 우리 밥약 달력</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>" />
+  <!-- 로컬 스타일 먼저 (네트워크 없어도 즉시 적용) -->
+  <link rel="stylesheet" href="styles.css" />
+  <!-- 구글 폰트는 비동기로 — 없으면 시스템 폰트로 폴백, 화면을 막지 않음 -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap"
+        media="print" onload="this.media='all'" />
+</head>
+<body>
+  <div class="app">
+    <!-- 헤더 -->
+    <header class="header">
+      <h1 class="logo">🍚 bobyak</h1>
+      <p class="subtitle" id="groupName">우리 밥약 멤버들</p>
+    </header>
+
+    <!-- 나는 누구? -->
+    <section class="me-picker card">
+      <div class="me-label">나는 누구?</div>
+      <div class="chips" id="memberChips"><!-- JS --></div>
+    </section>
+
+    <!-- 달력 -->
+    <section class="calendar card">
+      <div class="cal-nav">
+        <button class="nav-btn" id="prevBtn" aria-label="이전 달">‹</button>
+        <div class="cal-title" id="calTitle">2026년 6월</div>
+        <button class="nav-btn" id="nextBtn" aria-label="다음 달">›</button>
+      </div>
+      <button class="today-btn" id="todayBtn">오늘로</button>
+
+      <div class="weekdays">
+        <span class="sun">일</span><span>월</span><span>화</span>
+        <span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+      </div>
+      <div class="days" id="daysGrid"><!-- JS --></div>
+    </section>
+
+    <!-- 범례 -->
+    <section class="legend card">
+      <div class="legend-title">멤버 색깔</div>
+      <div class="legend-items" id="legend"><!-- JS --></div>
+    </section>
+
+    <footer class="footer">
+      <span id="storageMode" class="mode-badge">· 로컬 모드 ·</span>
+      <span class="made-with">밥약은 사랑입니다 🥢</span>
+    </footer>
+  </div>
+
+  <!-- 토스트 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 로컬 스크립트만 동기 로딩. Supabase는 공유 모드일 때 app.js가 동적으로 불러옴 -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

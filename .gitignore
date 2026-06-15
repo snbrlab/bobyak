@@ -1,0 +1,16 @@
+# OS / 에디터
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Vercel
+.vercel/
+
+# Node (혹시 도구 설치 시)
+node_modules/
+npm-debug.log*
+
+# 로컬 비밀키 — config.js에 실제 Supabase 키를 넣고 공개하기 싫다면 주석 해제
+# config.js

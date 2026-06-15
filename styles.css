@@ -1,0 +1,168 @@
+/* ===========================================================
+   bobyak 🍚  — 귀엽고 말랑한 밥약 달력
+   =========================================================== */
+
+:root {
+  --bg: #fff6f0;
+  --card: #ffffff;
+  --ink: #5a4a42;
+  --ink-soft: #a99a92;
+  --line: #f0e3da;
+  --accent: #ff8fab;
+  --sun: #ff7a7a;
+  --sat: #6aa9ff;
+  --shadow: 0 8px 24px rgba(214, 165, 140, 0.18);
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: "Gaegu", system-ui, sans-serif;
+  background: radial-gradient(circle at 20% 0%, #fff0e8, var(--bg) 60%);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 18px 14px 40px;
+}
+
+.app { width: 100%; max-width: 440px; }
+
+/* ---------- 헤더 ---------- */
+.header { text-align: center; margin: 10px 0 18px; }
+.logo {
+  font-family: "Jua", sans-serif;
+  font-size: 2.6rem;
+  margin: 0;
+  color: var(--ink);
+  letter-spacing: -1px;
+  filter: drop-shadow(0 2px 0 #ffe0d0);
+}
+.subtitle { margin: 2px 0 0; color: var(--ink-soft); font-size: 1.1rem; }
+
+/* ---------- 카드 공통 ---------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+/* ---------- 나는 누구 ---------- */
+.me-label { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 2px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+}
+.chip:active { transform: scale(.94); }
+.chip .dot { width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto; }
+.chip.selected {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, #fff);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--c) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ---------- 달력 ---------- */
+.cal-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.cal-title { font-family: "Jua", sans-serif; font-size: 1.5rem; }
+.nav-btn {
+  border: none; background: #fff3ec; color: var(--ink);
+  width: 40px; height: 40px; border-radius: 14px;
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+  transition: transform .1s, background .15s;
+}
+.nav-btn:active { transform: scale(.9); background: #ffe6da; }
+.today-btn {
+  display: block; margin: 0 auto 12px; border: none;
+  background: transparent; color: var(--accent);
+  font-family: inherit; font-size: .95rem; font-weight: 700;
+  cursor: pointer; text-decoration: underline dotted;
+}
+
+.weekdays, .days {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
+}
+.weekdays { margin-bottom: 6px; }
+.weekdays span {
+  text-align: center; font-weight: 700; font-size: .95rem; color: var(--ink-soft);
+}
+.weekdays .sun { color: var(--sun); }
+.weekdays .sat { color: var(--sat); }
+
+.day {
+  position: relative;
+  aspect-ratio: 1 / 1.05;
+  border-radius: 14px;
+  background: #fdf7f3;
+  border: 2px solid transparent;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 5px 3px 3px;
+  cursor: pointer;
+  transition: transform .1s, background .15s, border-color .15s;
+  overflow: hidden;
+}
+.day:active { transform: scale(.93); }
+.day.empty { background: transparent; cursor: default; }
+.day .num { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.day.sun .num { color: var(--sun); }
+.day.sat .num { color: var(--sat); }
+.day.today { border-color: var(--accent); background: #fff; }
+.day.today .num::after {
+  content: "오늘"; display: block; font-size: .55rem; color: var(--accent);
+  margin-top: -2px;
+}
+.day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
+
+/* 부재 점들 */
+.dots {
+  display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
+  align-content: flex-start; margin-top: 4px; width: 100%;
+}
+.dots .pdot {
+  width: 11px; height: 11px; border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,.12);
+  animation: pop .25s ease;
+}
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+/* ---------- 범례 ---------- */
+.legend-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+.legend-items { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 1rem; }
+.legend-item .dot { width: 14px; height: 14px; border-radius: 50%; }
+
+/* ---------- 푸터 / 토스트 ---------- */
+.footer {
+  text-align: center; color: var(--ink-soft); font-size: .9rem;
+  display: flex; flex-direction: column; gap: 4px; margin-top: 6px;
+}
+.mode-badge { font-size: .8rem; opacity: .7; }
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;
+  font-size: .95rem; font-weight: 700; opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s; z-index: 50;
+}
+.toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
+
+/* 이름 선택 안내(미선택 시 달력 흐리게) */
+.calendar.locked .days { opacity: .45; filter: grayscale(.3); }
