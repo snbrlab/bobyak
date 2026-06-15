@@ -8,6 +8,7 @@
 (() => {
   const cfg = window.BOBYAK_CONFIG;
   const palette = cfg.palette;
+  const MAX_MEMBERS = 10; // 모임 최대 인원
 
   // ---------- 날짜 유틸 (KST 로컬 기준, toISOString 금지!) ----------
   const pad = (n) => String(n).padStart(2, "0");
@@ -212,6 +213,7 @@
     function addMember() {
       const name = nameInput.value.trim();
       if (!name) return;
+      if (newMembers.length >= MAX_MEMBERS) { toast(`최대 ${MAX_MEMBERS}명까지예요`); return; }
       if (newMembers.some((m) => m.name === name)) { toast("이미 있는 이름이에요"); return; }
       newMembers.push({ name, color: palette[newMembers.length % palette.length] });
       nameInput.value = "";
@@ -264,17 +266,18 @@
     const members = group.members;
     const memberByName = Object.fromEntries(members.map((m) => [m.name, m]));
     const t = todayParts();
-    let viewY = t.y, viewM = t.m;
+    function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - x.getDay()); return x; }
+    function addDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+    let weekStart = startOfWeek(new Date()); // 보고 있는 주의 일요일
 
     const MEKEY = `bobyak_me_${gid}`;
     let me = localStorage.getItem(MEKEY);
     if (me && !memberByName[me]) me = null;
     let editMode = false;
-    const MAX_TAGS = 3; // 한 칸에 보여줄 이름 개수 (넘으면 +N)
+    const MAX_TAGS = MAX_MEMBERS; // 한 칸에 전원(최대 10명) 표시
 
     const chipsEl = $("memberChips");
     const daysEl = $("daysGrid");
-    const legendEl = $("legend");
     const calEl = document.querySelector(".calendar");
 
     // 링크 복사
@@ -295,6 +298,7 @@
 
     // 멤버 추가 (모임 만든 뒤에도)
     $("addMemberView").onclick = async () => {
+      if (members.length >= MAX_MEMBERS) { toast(`최대 ${MAX_MEMBERS}명까지예요`); return; }
       const name = (prompt("추가할 멤버 이름은?") || "").trim();
       if (!name) return;
       if (memberByName[name]) { toast("이미 있는 멤버예요"); return; }
@@ -303,7 +307,7 @@
       memberByName[name] = { name, color };
       try {
         await store.setMembers(gid, members);
-        renderChips(); renderLegend(); renderDays();
+        renderChips(); renderDays();
         toast(`${name} 추가 완료!`);
       } catch (e) {
         console.error(e);
@@ -338,7 +342,7 @@
         await store.setMembers(gid, members);
         await store.renameMember(gid, oldName, newName);
         if (me === oldName) { me = newName; localStorage.setItem(MEKEY, me); }
-        renderChips(); renderLegend(); renderDays();
+        renderChips(); renderDays();
         toast(`${oldName} → ${newName} ✓`);
       } catch (e) {
         console.error(e);
@@ -357,7 +361,7 @@
         await store.setMembers(gid, members);
         await store.deleteMemberData(gid, m.name);
         if (me === m.name) { me = null; localStorage.removeItem(MEKEY); }
-        renderChips(); renderLegend(); renderDays();
+        renderChips(); renderDays();
         toast(`${m.name} 삭제됨`);
       } catch (e) {
         console.error(e);
@@ -386,38 +390,27 @@
       });
     }
 
-    function renderLegend() {
-      legendEl.innerHTML = "";
-      members.forEach((m) => {
-        const s = document.createElement("span");
-        s.className = "legend-item";
-        s.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.name}`;
-        legendEl.appendChild(s);
-      });
-    }
 
     function renderDays() {
-      $("calTitle").textContent = `${viewY}년 ${viewM + 1}월`;
       calEl.classList.toggle("locked", !me);
       daysEl.innerHTML = "";
-
-      const first = new Date(viewY, viewM, 1).getDay();
-      const last = new Date(viewY, viewM + 1, 0).getDate();
       const myColor = me ? memberByName[me].color : null;
 
-      for (let i = 0; i < first; i++) {
-        const e = document.createElement("div");
-        e.className = "day empty";
-        daysEl.appendChild(e);
-      }
-      for (let d = 1; d <= last; d++) {
-        const date = ymd(viewY, viewM, d);
-        const dow = new Date(viewY, viewM, d).getDay();
+      // 이번 주 7일 범위 제목
+      const s = weekStart, e = addDays(weekStart, 6);
+      $("calTitle").textContent =
+        `${s.getMonth() + 1}월 ${s.getDate()}일 – ${e.getMonth() + 1}월 ${e.getDate()}일`;
+
+      for (let i = 0; i < 7; i++) {
+        const day = addDays(weekStart, i);
+        const yy = day.getFullYear(), mm = day.getMonth(), dd = day.getDate();
+        const date = ymd(yy, mm, dd);
+        const dow = day.getDay();
         const cell = document.createElement("div");
         cell.className = "day";
         if (dow === 0) cell.classList.add("sun");
         if (dow === 6) cell.classList.add("sat");
-        if (viewY === t.y && viewM === t.m && d === t.d) cell.classList.add("today");
+        if (yy === t.y && mm === t.m && dd === t.d) cell.classList.add("today");
 
         const myStatus = me ? store.get(gid, me, date) : null;
         if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
@@ -428,7 +421,7 @@
           .map(({ m, st }) => `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`)
           .join("");
         if (present.length > MAX_TAGS) tags += `<span class="ptag more">+${present.length - MAX_TAGS}</span>`;
-        cell.innerHTML = `<span class="num">${d}</span><div class="tags">${tags}</div>`;
+        cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
       }
@@ -451,12 +444,11 @@
       }
     }
 
-    $("prevBtn").onclick = () => { if (--viewM < 0) { viewM = 11; viewY--; } renderDays(); };
-    $("nextBtn").onclick = () => { if (++viewM > 11) { viewM = 0; viewY++; } renderDays(); };
-    $("todayBtn").onclick = () => { viewY = t.y; viewM = t.m; renderDays(); };
+    $("prevBtn").onclick = () => { weekStart = addDays(weekStart, -7); renderDays(); };
+    $("nextBtn").onclick = () => { weekStart = addDays(weekStart, 7); renderDays(); };
+    $("todayBtn").onclick = () => { weekStart = startOfWeek(new Date()); renderDays(); };
 
     renderChips();
-    renderLegend();
     renderDays();
 
     // 출근 데이터 로드 + 실시간 구독

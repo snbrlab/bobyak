@@ -117,7 +117,7 @@ body {
 
 /* ---------- 나는 누구 ---------- */
 .me-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.me-label { font-size: 1.15rem; font-weight: 700; }
+.me-label { font-size: .98rem; font-weight: 700; }
 .mini-btn {
   border: 2px dashed var(--line); background: #fff; color: var(--ink-soft);
   border-radius: 999px; padding: 5px 12px; font-family: var(--font-body);
@@ -132,13 +132,13 @@ body {
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   border: 2px solid var(--line); background: #fff; border-radius: 999px;
-  padding: 8px 16px; font-family: var(--font-body); font-size: 1.02rem;
+  padding: 5px 12px; font-family: var(--font-body); font-size: .85rem;
   font-weight: 700; color: var(--ink); cursor: pointer;
-  display: inline-flex; align-items: center; gap: 7px;
+  display: inline-flex; align-items: center; gap: 6px;
   transition: transform .12s, box-shadow .12s, border-color .12s;
 }
 .chip:active { transform: scale(.94); }
-.chip .dot { width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto; }
+.chip .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
 .chip.selected {
   border-color: var(--c);
   background: color-mix(in srgb, var(--c) 16%, #fff);
@@ -170,32 +170,32 @@ body {
 .weekdays .sun { color: var(--sun); }
 .weekdays .sat { color: var(--sat); }
 
+/* 주간 뷰: 한 줄 7칸. 인원수만큼 세로로 자라고, 같은 줄이라 높이 자동 정렬 */
 .day {
-  position: relative; height: 78px; border-radius: 14px;
+  position: relative; min-height: 110px; border-radius: 14px;
   background: #fdf7f3; border: 2px solid transparent;
   display: flex; flex-direction: column; align-items: center;
-  padding: 4px 3px; cursor: pointer; overflow: hidden;
+  padding: 5px 3px; cursor: pointer;
   transition: transform .1s, background .15s, border-color .15s;
 }
 .day:active { transform: scale(.93); }
 .day.empty { background: transparent; cursor: default; }
-.day .num { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.day .num { font-size: .9rem; line-height: 1.1; font-weight: 700; color: var(--ink); }
 .day.sun .num { color: var(--sun); }
 .day.sat .num { color: var(--sat); }
-.day.today { border-color: var(--accent); background: #fff; }
-.day.today .num::after {
-  content: "오늘"; display: block; font-size: .55rem; color: var(--accent); margin-top: -2px;
-}
+/* 오늘은 테두리 + 번호 색으로 표시 (별도 '오늘' 줄을 두지 않아 칸 공간 확보) */
+.day.today { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 2px #ffe2ea inset; }
+.day.today .num { color: var(--accent); }
 .day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
 
 /* 날짜 칸 안의 부재 이름 라벨 — 한 층씩 세로로 쌓임 */
 .tags {
-  display: flex; flex-direction: column; gap: 2px; width: 100%;
-  margin-top: 3px; overflow: hidden; align-items: stretch;
+  display: flex; flex-direction: column; gap: 3px; width: 100%;
+  margin-top: 4px; overflow: hidden; align-items: stretch;
 }
 .tags .ptag {
-  width: 100%; font-size: .62rem; line-height: 1.35; font-weight: 700;
-  border-radius: 5px; padding: 0 3px; color: #4a3f3a; text-align: center;
+  width: 100%; font-size: .68rem; line-height: 1.7; min-height: 16px; font-weight: 700;
+  border-radius: 6px; padding: 1px 2px; color: #4a3f3a; text-align: center;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   animation: pop .22s ease;
 }
@@ -211,10 +211,6 @@ body {
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ---------- 범례 ---------- */
-.legend-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
-.legend-items { display: flex; flex-wrap: wrap; gap: 10px 14px; }
-.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 1rem; }
-.legend-item .dot { width: 14px; height: 14px; border-radius: 50%; }
 
 /* ---------- 푸터 / 토스트 ---------- */
 .footer {
