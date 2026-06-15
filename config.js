@@ -31,7 +31,7 @@ const BOBYAK_CONFIG = {
   //  ※ 모임별 링크를 진짜로 '공유'하려면 Supabase가 필요해요. (README 참고)
   // ----------------------------------------------------------
   supabase: {
-    url: "",      // 예: "https://xxxxx.supabase.co"
-    anonKey: "",  // 예: "eyJhbGciOi..."
+    url: "https://wrtboawksvrqzjapsyym.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndydGJvYXdrc3ZycXpqYXBzeXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MTA1NzksImV4cCI6MjA5NzA4NjU3OX0.PcBrhUmvFxKdLCARTpMZF5Kg9xZs3WR6g1TKqWFMJ3g",
   },
 };
