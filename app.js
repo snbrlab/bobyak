@@ -34,24 +34,36 @@
   const LocalStore = {
     mode: "로컬",
     GK: "bobyak_groups_v2",
-    AK: "bobyak_abs_v2",
+    MKEY: "bobyak_marks_v3",
     groups: {},
-    abs: new Set(),
+    marks: {}, // key -> 'full' | 'am' | 'pm'
     async init() {
       try { this.groups = JSON.parse(localStorage.getItem(this.GK) || "{}"); } catch { this.groups = {}; }
-      try { this.abs = new Set(JSON.parse(localStorage.getItem(this.AK) || "[]")); } catch { this.abs = new Set(); }
+      try { this.marks = JSON.parse(localStorage.getItem(this.MKEY) || "{}"); } catch { this.marks = {}; }
     },
     _saveG() { localStorage.setItem(this.GK, JSON.stringify(this.groups)); },
-    _saveA() { localStorage.setItem(this.AK, JSON.stringify([...this.abs])); },
+    _saveM() { localStorage.setItem(this.MKEY, JSON.stringify(this.marks)); },
     async createGroup(id, name, members) { this.groups[id] = { name, members }; this._saveG(); },
     async getGroup(id) { return this.groups[id] || null; },
     async setMembers(id, members) { if (this.groups[id]) { this.groups[id].members = members; this._saveG(); } },
     async watchGroup() { /* 로컬은 이미 메모리에 다 있음 */ },
-    has(gid, name, date) { return this.abs.has(ak(gid, name, date)); },
-    async toggle(gid, name, date) {
+    get(gid, name, date) { return this.marks[ak(gid, name, date)] || null; },
+    async setStatus(gid, name, date, status) {
       const k = ak(gid, name, date);
-      this.abs.has(k) ? this.abs.delete(k) : this.abs.add(k);
-      this._saveA();
+      if (status) this.marks[k] = status; else delete this.marks[k];
+      this._saveM();
+    },
+    async renameMember(gid, oldN, newN) {
+      const pre = `${gid}|${oldN}|`;
+      Object.keys(this.marks).forEach((k) => {
+        if (k.startsWith(pre)) { this.marks[`${gid}|${newN}|${k.slice(pre.length)}`] = this.marks[k]; delete this.marks[k]; }
+      });
+      this._saveM();
+    },
+    async deleteMemberData(gid, name) {
+      const pre = `${gid}|${name}|`;
+      Object.keys(this.marks).forEach((k) => { if (k.startsWith(pre)) delete this.marks[k]; });
+      this._saveM();
     },
   };
 
@@ -71,7 +83,7 @@
   const SupaStore = {
     mode: "공유",
     client: null,
-    abs: new Set(),
+    marks: {}, // key -> 'full' | 'am' | 'pm'
     _cb: null,
     async init() {
       await loadSupabaseLib();
@@ -94,34 +106,52 @@
     async watchGroup(gid, onChange) {
       this._cb = onChange;
       const { data, error } = await this.client.from("absences")
-        .select("member,date").eq("group_id", gid);
+        .select("member,date,status").eq("group_id", gid);
       if (error) throw error;
-      this.abs = new Set(data.map((r) => ak(gid, r.member, r.date)));
+      this.marks = {};
+      data.forEach((r) => { this.marks[ak(gid, r.member, r.date)] = r.status || "full"; });
       this.client
         .channel("abs-" + gid)
         .on("postgres_changes",
           { event: "*", schema: "public", table: "absences", filter: `group_id=eq.${gid}` },
           (p) => {
-            if (p.eventType === "INSERT") this.abs.add(ak(gid, p.new.member, p.new.date));
-            if (p.eventType === "DELETE") this.abs.delete(ak(gid, p.old.member, p.old.date));
+            if (p.eventType === "DELETE") delete this.marks[ak(gid, p.old.member, p.old.date)];
+            else this.marks[ak(gid, p.new.member, p.new.date)] = p.new.status || "full";
             this._cb && this._cb();
           })
         .subscribe();
     },
-    has(gid, name, date) { return this.abs.has(ak(gid, name, date)); },
-    async toggle(gid, name, date) {
+    get(gid, name, date) { return this.marks[ak(gid, name, date)] || null; },
+    async setStatus(gid, name, date, status) {
       const k = ak(gid, name, date);
-      if (this.abs.has(k)) {
-        this.abs.delete(k);
+      const prev = this.marks[k] || null;
+      if (status) {
+        this.marks[k] = status;
+        const { error } = await this.client.from("absences")
+          .upsert({ group_id: gid, member: name, date, status }, { onConflict: "group_id,member,date" });
+        if (error) { prev ? (this.marks[k] = prev) : delete this.marks[k]; throw error; }
+      } else {
+        delete this.marks[k];
         const { error } = await this.client.from("absences")
           .delete().eq("group_id", gid).eq("member", name).eq("date", date);
-        if (error) { this.abs.add(k); throw error; }
-      } else {
-        this.abs.add(k);
-        const { error } = await this.client.from("absences")
-          .insert({ group_id: gid, member: name, date });
-        if (error) { this.abs.delete(k); throw error; }
+        if (error) { if (prev) this.marks[k] = prev; throw error; }
       }
+    },
+    async renameMember(gid, oldN, newN) {
+      const { error } = await this.client.from("absences")
+        .update({ member: newN }).eq("group_id", gid).eq("member", oldN);
+      if (error) throw error;
+      const pre = `${gid}|${oldN}|`;
+      Object.keys(this.marks).forEach((k) => {
+        if (k.startsWith(pre)) { this.marks[`${gid}|${newN}|${k.slice(pre.length)}`] = this.marks[k]; delete this.marks[k]; }
+      });
+    },
+    async deleteMemberData(gid, name) {
+      const { error } = await this.client.from("absences")
+        .delete().eq("group_id", gid).eq("member", name);
+      if (error) throw error;
+      const pre = `${gid}|${name}|`;
+      Object.keys(this.marks).forEach((k) => { if (k.startsWith(pre)) delete this.marks[k]; });
     },
   };
 
@@ -239,6 +269,8 @@
     const MEKEY = `bobyak_me_${gid}`;
     let me = localStorage.getItem(MEKEY);
     if (me && !memberByName[me]) me = null;
+    let editMode = false;
+    const MAX_TAGS = 3; // 한 칸에 보여줄 이름 개수 (넘으면 +N)
 
     const chipsEl = $("memberChips");
     const daysEl = $("daysGrid");
@@ -280,19 +312,76 @@
       }
     };
 
+    // 이름 수정 모드 토글
+    $("editMembers").onclick = () => {
+      editMode = !editMode;
+      $("editMembers").textContent = editMode ? "✓ 완료" : "✏️ 수정";
+      $("editMembers").classList.toggle("active", editMode);
+      renderChips();
+    };
+
+    function selectMe(name) {
+      me = (me === name) ? null : name;
+      me ? localStorage.setItem(MEKEY, me) : localStorage.removeItem(MEKEY);
+      renderChips(); renderDays();
+      if (me) toast(`${name}(으)로 설정했어요!`);
+    }
+
+    async function renameMember(m) {
+      const newName = (prompt("새 이름은?", m.name) || "").trim();
+      if (!newName || newName === m.name) return;
+      if (memberByName[newName]) { toast("이미 있는 이름이에요"); return; }
+      const oldName = m.name;
+      m.name = newName;
+      delete memberByName[oldName]; memberByName[newName] = m;
+      try {
+        await store.setMembers(gid, members);
+        await store.renameMember(gid, oldName, newName);
+        if (me === oldName) { me = newName; localStorage.setItem(MEKEY, me); }
+        renderChips(); renderLegend(); renderDays();
+        toast(`${oldName} → ${newName} ✓`);
+      } catch (e) {
+        console.error(e);
+        m.name = oldName; delete memberByName[newName]; memberByName[oldName] = m;
+        renderChips();
+        toast("이름 변경 실패 😢");
+      }
+    }
+
+    async function deleteMember(m, idx) {
+      if (!confirm(`'${m.name}' 멤버를 삭제할까요?\n표시한 날짜도 같이 지워져요.`)) return;
+      const removed = members[idx];
+      members.splice(idx, 1);
+      delete memberByName[m.name];
+      try {
+        await store.setMembers(gid, members);
+        await store.deleteMemberData(gid, m.name);
+        if (me === m.name) { me = null; localStorage.removeItem(MEKEY); }
+        renderChips(); renderLegend(); renderDays();
+        toast(`${m.name} 삭제됨`);
+      } catch (e) {
+        console.error(e);
+        members.splice(idx, 0, removed); memberByName[removed.name] = removed;
+        renderChips();
+        toast("삭제 실패 😢");
+      }
+    }
+
     function renderChips() {
       chipsEl.innerHTML = "";
-      members.forEach((m) => {
-        const b = document.createElement("button");
-        b.className = "chip" + (me === m.name ? " selected" : "");
+      members.forEach((m, idx) => {
+        const b = document.createElement(editMode ? "span" : "button");
+        b.className = "chip" + (!editMode && me === m.name ? " selected" : "") + (editMode ? " editing" : "");
         b.style.setProperty("--c", m.color);
-        b.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.name}`;
-        b.onclick = () => {
-          me = (me === m.name) ? null : m.name;
-          me ? localStorage.setItem(MEKEY, me) : localStorage.removeItem(MEKEY);
-          renderChips(); renderDays();
-          if (me) toast(`${m.name}(으)로 설정했어요!`);
-        };
+        if (editMode) {
+          b.innerHTML = `<span class="dot" style="background:${m.color}"></span>` +
+            `<span class="cname">${m.name}</span><span class="x" title="삭제">✕</span>`;
+          b.querySelector(".cname").onclick = () => renameMember(m);
+          b.querySelector(".x").onclick = () => deleteMember(m, idx);
+        } else {
+          b.innerHTML = `<span class="dot" style="background:${m.color}"></span>${m.name}`;
+          b.onclick = () => selectMe(m.name);
+        }
         chipsEl.appendChild(b);
       });
     }
@@ -330,27 +419,32 @@
         if (dow === 6) cell.classList.add("sat");
         if (viewY === t.y && viewM === t.m && d === t.d) cell.classList.add("today");
 
-        const absent = members.filter((m) => store.has(gid, m.name, date));
-        if (me && store.has(gid, me, date)) {
-          cell.classList.add("mine");
-          cell.style.setProperty("--myc", myColor);
-        }
-        const dots = absent
-          .map((m) => `<span class="pdot" style="background:${m.color}" title="${m.name}"></span>`)
+        const myStatus = me ? store.get(gid, me, date) : null;
+        if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
+        const present = members
+          .map((m) => ({ m, st: store.get(gid, m.name, date) }))
+          .filter((x) => x.st);
+        let tags = present.slice(0, MAX_TAGS)
+          .map(({ m, st }) => `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`)
           .join("");
-        cell.innerHTML = `<span class="num">${d}</span><div class="dots">${dots}</div>`;
+        if (present.length > MAX_TAGS) tags += `<span class="ptag more">+${present.length - MAX_TAGS}</span>`;
+        cell.innerHTML = `<span class="num">${d}</span><div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
       }
     }
 
+    // 탭마다 순환: 안나옴 → 종일 → 오전반차 → 오후반차 → 안나옴
+    const CYCLE = [null, "full", "am", "pm"];
+    const STATUS_LABEL = { full: "종일 출근 🌞", am: "오전 반차 🌅 (오후 나와요)", pm: "오후 반차 🌆 (오전 나와요)" };
     async function onDayClick(date) {
       if (!me) { toast("먼저 위에서 이름을 골라줘요!"); return; }
-      const wasAbsent = store.has(gid, me, date);
+      const cur = store.get(gid, me, date);
+      const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
       try {
-        await store.toggle(gid, me, date);
+        await store.setStatus(gid, me, date, next);
         renderDays();
-        toast(wasAbsent ? `${date} 부재 취소` : `${date} 부재 표시 ✓`);
+        toast(`${date} · ${STATUS_LABEL[next] || "안 나옴 ❌"}`);
       } catch (e) {
         console.error(e);
         toast("저장 실패 😢 다시 시도해줘요");
@@ -365,10 +459,10 @@
     renderLegend();
     renderDays();
 
-    // 부재 데이터 로드 + 실시간 구독
+    // 출근 데이터 로드 + 실시간 구독
     store.watchGroup(gid, () => renderDays())
       .then(() => renderDays())
-      .catch((e) => { console.error(e); toast("부재 데이터 로드 실패 😢"); });
+      .catch((e) => { console.error(e); toast("출근 데이터 로드 실패 😢"); });
 
     pushRecent(gid, group.name);
   }

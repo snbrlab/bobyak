@@ -16,8 +16,8 @@
   --radius: 22px;
 
   /* 폰트 — 다른 귀여운 폰트로 바꾸려면 여기만 수정!
-     추천: 제목 "Jua", 본문 "Gowun Dodum"(깔끔) / "Dongle"(더 동글) */
-  --font-head: "Jua", system-ui, sans-serif;
+     제목 "Dongle"(동글), 본문 "Gowun Dodum"(깔끔). 후보: "Jua", "Do Hyeon" 등 */
+  --font-head: "Dongle", system-ui, sans-serif;
   --font-body: "Gowun Dodum", system-ui, sans-serif;
 }
 
@@ -42,10 +42,12 @@ body {
 .header { text-align: center; margin: 10px 0 18px; }
 .logo {
   font-family: var(--font-head);
-  font-size: 2.6rem;
+  font-weight: 700;
+  font-size: 3.6rem;
+  line-height: 1.1;
   margin: 0;
   color: var(--ink);
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   filter: drop-shadow(0 2px 0 #ffe0d0);
 }
 .subtitle { margin: 4px 0 0; color: var(--ink-soft); font-size: 1rem; }
@@ -58,7 +60,7 @@ body {
   padding: 18px;
   margin-bottom: 16px;
 }
-.card-h { font-family: var(--font-head); font-size: 1.35rem; margin: 0 0 8px; }
+.card-h { font-family: var(--font-head); font-weight: 700; font-size: 1.9rem; margin: 0 0 8px; }
 .hint { color: var(--ink-soft); font-size: .95rem; line-height: 1.5; margin: 0 0 16px; }
 
 /* ---------- 모임 만들기 ---------- */
@@ -81,8 +83,8 @@ body {
 .primary-btn {
   width: 100%; margin-top: 18px; border: none; cursor: pointer;
   background: linear-gradient(135deg, #ff9fb6, #ff8fab);
-  color: #fff; font-family: var(--font-head); font-size: 1.25rem;
-  padding: 14px; border-radius: 16px;
+  color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 1.7rem;
+  padding: 12px 14px; border-radius: 16px;
   box-shadow: 0 6px 16px rgba(255,143,171,.4);
   transition: transform .1s, box-shadow .15s;
 }
@@ -122,6 +124,11 @@ body {
   font-size: .85rem; font-weight: 700; cursor: pointer; transition: transform .1s;
 }
 .mini-btn:active { transform: scale(.92); }
+.mini-btn.active { border-style: solid; border-color: var(--accent); color: var(--accent); background: #fff4f7; }
+.me-actions { display: flex; gap: 6px; }
+.chip.editing { cursor: default; }
+.chip.editing .cname { cursor: text; text-decoration: underline dotted; }
+.chip.editing .x { cursor: pointer; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   border: 2px solid var(--line); background: #fff; border-radius: 999px;
@@ -139,10 +146,12 @@ body {
   transform: translateY(-1px);
 }
 .chip .x { margin-left: 2px; color: var(--ink-soft); font-weight: 700; }
+.pick-hint { margin: 12px 2px 0; font-size: .9rem; color: var(--ink-soft); }
+.pick-hint b { color: var(--accent); }
 
 /* ---------- 달력 ---------- */
 .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.cal-title { font-family: var(--font-head); font-size: 1.5rem; }
+.cal-title { font-family: var(--font-head); font-weight: 700; font-size: 2rem; }
 .nav-btn {
   border: none; background: #fff3ec; color: var(--ink);
   width: 40px; height: 40px; border-radius: 14px;
@@ -162,10 +171,10 @@ body {
 .weekdays .sat { color: var(--sat); }
 
 .day {
-  position: relative; aspect-ratio: 1 / 1.05; border-radius: 14px;
+  position: relative; height: 78px; border-radius: 14px;
   background: #fdf7f3; border: 2px solid transparent;
   display: flex; flex-direction: column; align-items: center;
-  padding: 5px 3px 3px; cursor: pointer; overflow: hidden;
+  padding: 4px 3px; cursor: pointer; overflow: hidden;
   transition: transform .1s, background .15s, border-color .15s;
 }
 .day:active { transform: scale(.93); }
@@ -179,15 +188,27 @@ body {
 }
 .day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
 
-.dots {
-  display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
-  align-content: flex-start; margin-top: 4px; width: 100%;
+/* 날짜 칸 안의 부재 이름 라벨 — 한 층씩 세로로 쌓임 */
+.tags {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+  margin-top: 3px; overflow: hidden; align-items: stretch;
 }
-.dots .pdot {
-  width: 11px; height: 11px; border-radius: 50%;
-  box-shadow: 0 1px 2px rgba(0,0,0,.12); animation: pop .25s ease;
+.tags .ptag {
+  width: 100%; font-size: .62rem; line-height: 1.35; font-weight: 700;
+  border-radius: 5px; padding: 0 3px; color: #4a3f3a; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  animation: pop .22s ease;
 }
-@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+/* 종일: 꽉 / 오전반차(am): 오른쪽 반쪽 / 오후반차(pm): 왼쪽 반쪽 색칠 */
+.tags .ptag.full { background: var(--c); }
+.tags .ptag.am {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 20%, #fff) 0 50%, var(--c) 50% 100%);
+}
+.tags .ptag.pm {
+  background: linear-gradient(90deg, var(--c) 0 50%, color-mix(in srgb, var(--c) 20%, #fff) 50% 100%);
+}
+.tags .ptag.more { background: transparent !important; color: var(--ink-soft); font-size: .58rem; }
+@keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ---------- 범례 ---------- */
 .legend-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
