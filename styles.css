@@ -101,19 +101,14 @@ body {
 .recent-item:active { transform: scale(.97); background: #fbeee6; }
 .recent-item .go { color: var(--accent); }
 
-/* ---------- 공유 바 ---------- */
-.share-bar {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  background: linear-gradient(135deg, #fff4ee, #ffeef4);
+/* ---------- 링크 복사 버튼 (맨 아래) ---------- */
+.copy-link-btn {
+  width: 100%; border: none; cursor: pointer; margin-bottom: 16px;
+  background: #fff; color: var(--ink); border-radius: 16px; padding: 14px;
+  font-family: var(--font-body); font-weight: 700; font-size: 1.05rem;
+  box-shadow: var(--shadow); transition: transform .1s, background .15s;
 }
-.share-text { font-size: .95rem; font-weight: 700; color: var(--ink); }
-.copy-btn {
-  border: none; background: #fff; color: var(--ink); cursor: pointer;
-  border-radius: 999px; padding: 9px 14px; font-family: var(--font-body);
-  font-weight: 700; font-size: .92rem; white-space: nowrap;
-  box-shadow: 0 3px 8px rgba(214,165,140,.25); transition: transform .1s;
-}
-.copy-btn:active { transform: scale(.93); }
+.copy-link-btn:active { transform: scale(.98); background: #fff4f7; }
 
 /* ---------- 나는 누구 ---------- */
 .me-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -207,6 +202,8 @@ body {
 .tags .ptag.pm {
   background: linear-gradient(90deg, var(--c) 0 50%, color-mix(in srgb, var(--c) 20%, #fff) 50% 100%);
 }
+/* 안 나오는 사람 자리(빈 슬롯) — 자리만 유지, 거의 안 보이게 */
+.tags .ptag.empty { background: transparent; min-height: 16px; animation: none; }
 .tags .ptag.more { background: transparent !important; color: var(--ink-soft); font-size: .58rem; }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -217,7 +214,6 @@ body {
   text-align: center; color: var(--ink-soft); font-size: .9rem;
   display: flex; flex-direction: column; gap: 4px; margin-top: 6px;
 }
-.mode-badge { font-size: .8rem; opacity: .7; }
 .toast {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px;

@@ -49,12 +49,6 @@
 
     <!-- ============ 화면 B: 모임 달력 ============ -->
     <section id="screenView" class="screen hidden">
-      <!-- 공유 바 -->
-      <div class="share-bar card">
-        <div class="share-text">📣 이 링크를 단톡방에 공유하세요</div>
-        <button id="copyLinkBtn" class="copy-btn">🔗 링크 복사</button>
-      </div>
-
       <!-- 나는 누구? -->
       <section class="me-picker card">
         <div class="me-head">
@@ -82,10 +76,11 @@
         <div class="days" id="daysGrid"></div>
       </section>
 
+      <!-- 링크 복사 (맨 아래) -->
+      <button id="copyLinkBtn" class="copy-link-btn">🔗 링크 복사</button>
     </section>
 
     <footer class="footer">
-      <span id="storageMode" class="mode-badge">· 로컬 모드 ·</span>
       <span class="made-with">밥약은 사랑입니다 🥢</span>
     </footer>
   </div>

@@ -185,7 +185,6 @@
     try { return JSON.parse(localStorage.getItem(RECENT) || "[]"); } catch { return []; }
   }
 
-  function setMode(text) { $("storageMode").textContent = `· ${text} ·`; }
 
   // =========================================================
   //  화면 A — 모임 만들기
@@ -274,7 +273,6 @@
     let me = localStorage.getItem(MEKEY);
     if (me && !memberByName[me]) me = null;
     let editMode = false;
-    const MAX_TAGS = MAX_MEMBERS; // 한 칸에 전원(최대 10명) 표시
 
     const chipsEl = $("memberChips");
     const daysEl = $("daysGrid");
@@ -414,13 +412,13 @@
 
         const myStatus = me ? store.get(gid, me, date) : null;
         if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
-        const present = members
-          .map((m) => ({ m, st: store.get(gid, m.name, date) }))
-          .filter((x) => x.st);
-        let tags = present.slice(0, MAX_TAGS)
-          .map(({ m, st }) => `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`)
-          .join("");
-        if (present.length > MAX_TAGS) tags += `<span class="ptag more">+${present.length - MAX_TAGS}</span>`;
+        // 멤버 순서 고정: 전원을 같은 순서로, 안 나오는 날은 빈 슬롯으로 자리 유지
+        const tags = members.map((m) => {
+          const st = store.get(gid, m.name, date);
+          return st
+            ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
+            : `<span class="ptag empty"></span>`;
+        }).join("");
         cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
@@ -465,10 +463,8 @@
   async function main() {
     try {
       await store.init();
-      setMode(store.mode === "공유" ? "공유 모드" : "로컬 모드");
     } catch (e) {
       console.error("저장소 초기화 실패:", e);
-      setMode("연결 오류");
       toast("공유 저장소 연결 실패 😢");
       // 그래도 화면은 띄움 (만들기 화면)
       renderCreate();
