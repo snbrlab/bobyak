@@ -623,11 +623,11 @@
       const mu = getMeetup(date, meal);
       const link = `${location.origin}/?g=${gid}`;
       const L = [];
-      L.push(`🍚 ${mo}월 ${dd}일(${wd}) ${meal === "dinner" ? "저녁" : "점심"}`);
-      L.push(`${mu.time ? `⏰ ${mu.time} 집합 · ` : ""}${present.length}/${members.length}명`);
-      if (present.length) L.push(`✅ ${present.map((m) => m.name).join(", ")}`);
-      if (absent.length) L.push(`❌ ${absent.map((m) => m.name).join(", ")}`);
-      L.push(`🔗 ${link}`);
+      L.push(`[${mo}/${dd}(${wd}) ${meal === "dinner" ? "저녁" : "점심"}]`);
+      L.push(`${mu.time ? `${mu.time} 집합 · ` : ""}${present.length}/${members.length}`);
+      if (present.length) L.push(`참석: ${present.map((m) => m.name).join(", ")}`);
+      if (absent.length) L.push(`불참: ${absent.map((m) => m.name).join(", ")}`);
+      L.push(link);
       return L.join("\n");
     }
     let curDate = null, curMeal = null; // 현재 일간 뷰의 날짜·식사 (공유 버튼용)
