@@ -80,6 +80,30 @@
   .e-pill.am{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 20%,#fff) 50%,var(--c) 50%);}
   .e-pill.pm{background:linear-gradient(90deg,var(--c) 50%,color-mix(in srgb,var(--c) 20%,#fff) 50%);}
   .e-pill.empty{background:transparent;}
+
+  /* ============ 일간 식탁 ============ */
+  .day-view{display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .tbl-label{font-family:var(--head);font-weight:700;font-size:1.5rem;text-align:center;}
+  .table-wrap{position:relative;width:260px;height:260px;margin:0 auto;}
+  .table-center{position:absolute;left:50%;top:50%;width:118px;height:118px;margin:-59px;border-radius:50%;
+    background:radial-gradient(circle at 50% 35%,#fff,#f3e3d6);box-shadow:inset 0 5px 12px rgba(180,140,110,.28);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .table-center .tc-num{font-family:var(--head);font-weight:700;font-size:1.8rem;color:var(--accent);line-height:1;}
+  .table-center .tc-cnt{font-size:.8rem;color:var(--soft);}
+  .seat{position:absolute;left:50%;top:50%;width:60px;margin-left:-30px;margin-top:-30px;text-align:center;}
+  .seat .bowl{font-size:1.8rem;line-height:1.1;}
+  .seat .snm{font-size:.74rem;font-weight:700;}
+  .seat.absent{opacity:.38;}
+
+  /* ============ 월간 미니맵 ============ */
+  .mini-month{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+  .mini-day{min-height:46px;border-radius:9px;background:#fdf7f3;padding:3px 2px;
+    display:flex;flex-direction:column;align-items:center;border:2px solid transparent;}
+  .mini-day.today{border-color:var(--accent);background:#fff;}
+  .mini-day .mnum{font-size:.72rem;font-weight:700;color:var(--soft);}
+  .mini-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:3px;}
+  .mini-dots .md{width:8px;height:8px;border-radius:50%;}
+  .mini-day.allin{background:linear-gradient(120deg,#ffd0e4,#ffe7b8,#cdf6e0,#c9e7ff,#ffd0e4);background-size:320% 320%;animation:flow 3s ease infinite;}
 </style>
 </head>
 <body>
@@ -109,6 +133,11 @@ const get = (day,name)=> day.st[name] || null;
 const present = (day)=> members.filter(m=>get(day,m.name));
 const allIn = (day)=> present(day).length === members.length;
 const root = document.getElementById("root");
+// 월간 샘플 상태(보여주기용 가짜 데이터)
+function monthStatus(dayNum, mi){
+  const r = (dayNum*7 + mi*13) % 11;
+  if(r<4) return null; if(r===4) return "am"; if(r===5) return "pm"; return "full";
+}
 
 function concept(title, desc, innerHTML, legend){
   return `<section class="concept"><h2>${title}</h2><div class="desc">${desc}</div>${innerHTML}${legend?`<div class="legend">${legend}</div>`:""}</section>`;
@@ -198,7 +227,66 @@ function currentConcept(){
     wdhead()+`<div class="week">${cards}</div>`, "왼쪽반=오후반차 · 오른쪽반=오전반차");
 }
 
-root.innerHTML = gridConcept() + gaugeConcept() + tableConcept() + pillIconConcept() + currentConcept();
+/* ===== 일간 식탁 ===== */
+function seatsHTML(day){
+  const n = members.length, R = 96;
+  return members.map((m,i)=>{
+    const ang = (i/n)*2*Math.PI - Math.PI/2;
+    const x = Math.cos(ang)*R, y = Math.sin(ang)*R;
+    const s = get(day,m.name);
+    const bowl = !s ? "🥣" : (s==="full" ? "🍚" : "🍙");
+    return `<div class="seat ${s?'':'absent'}" style="transform:translate(${x}px,${y}px)">
+      <div class="bowl">${bowl}</div><div class="snm" style="color:${m.color}">${m.name}</div></div>`;
+  }).join("");
+}
+function dailyConcept(){
+  const days = [week[2], week[1]]; // 수(다모임), 화(2명)
+  const views = days.map(w=>`
+    <div>
+      <div class="tbl-label">${w.dow}요일 ${w.d}일</div>
+      <div class="table-wrap">
+        <div class="table-center"><div class="tc-num">${present(w).length}/${members.length}</div><div class="tc-cnt">출근</div></div>
+        ${seatsHTML(w)}
+      </div>
+    </div>`).join("");
+  return concept("📅 일간 — 식탁 뷰", "하루를 둥근 식탁으로. 출근=밥그릇🍚(반차🍙), 안나옴=빈그릇🥣. 자리=멤버. (앱에선 좌우로 날짜 이동)",
+    `<div class="day-view">${views}</div>`, "위=수요일(다모임) · 아래=화요일(2명)");
+}
+
+/* ===== 월간 미니맵 ===== */
+function monthlyConcept(){
+  const Y=2026, M=5; // 6월
+  const lastDay = new Date(Y,M+1,0).getDate();
+  const firstDow = (new Date(Y,M,1).getDay()+6)%7; // 0=월..6=일
+  let cells = [];
+  for(let i=0;i<Math.min(firstDow,5);i++) cells.push(null);
+  for(let d=1; d<=lastDay; d++){
+    const dow=(new Date(Y,M,d).getDay()+6)%7;
+    if(dow>4) continue; // 토일 제외
+    cells.push(d);
+  }
+  const html = cells.map(d=>{
+    if(d===null) return `<div class="mini-day" style="background:transparent;border:none"></div>`;
+    let cnt=0;
+    const dots = members.map((m,mi)=>{
+      const s = monthStatus(d,mi);
+      if(!s) return "";
+      cnt++;
+      const bg = s==="full" ? m.color
+        : s==="am" ? `linear-gradient(90deg,#f0e6df 50%,${m.color} 50%)`
+        : `linear-gradient(90deg,${m.color} 50%,#f0e6df 50%)`;
+      return `<span class="md" style="background:${bg}"></span>`;
+    }).join("");
+    const allin = cnt===members.length;
+    return `<div class="mini-day ${allin?'allin':''} ${d===24?'today':''}"><span class="mnum">${d}</span><div class="mini-dots">${dots}</div></div>`;
+  }).join("");
+  return concept("🗓️ 월간 — 색점 미니맵", "한 달 평일을 한눈에. 출근자를 멤버 색 점으로(종일=꽉점, 반차=반점). 날짜를 누르면 그 날 일간(식탁)으로!",
+    `<div class="wdhead">${"월화수목금".split("").map(x=>`<span>${x}</span>`).join("")}</div><div class="mini-month">${html}</div>`,
+    "● 종일 ◗ 반차 · 점 색=사람 / 무지개칸=다모임 (가짜 샘플 데이터)");
+}
+
+root.innerHTML = dailyConcept() + monthlyConcept()
+  + gridConcept() + gaugeConcept() + tableConcept() + pillIconConcept() + currentConcept();
 </script>
 </body>
 </html>
