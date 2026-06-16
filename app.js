@@ -410,13 +410,19 @@
         const myStatus = me ? store.get(gid, me, date) : null;
         if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
         // 멤버 순서 고정: 전원을 같은 순서로, 안 나오는 날은 빈 슬롯으로 자리 유지
+        let presentCount = 0;
         const tags = members.map((m) => {
           const st = store.get(gid, m.name, date);
+          if (st) presentCount++;
           return st
             ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
             : `<span class="ptag empty"></span>`;
         }).join("");
-        cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
+        // 전원 출근하는 날 → 축하 표시 🎉
+        const allIn = members.length >= 2 && presentCount === members.length;
+        if (allIn) cell.classList.add("allin");
+        const badge = allIn ? `<div class="allin-badge">🎉 다모임!</div>` : "";
+        cell.innerHTML = `<span class="num">${dd}</span>${badge}<div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
       }
