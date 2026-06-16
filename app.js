@@ -426,17 +426,14 @@
       }
     }
 
-    // 탭마다 순환: 안나옴 → 종일 → 오전반차 → 오후반차 → 안나옴
-    const CYCLE = [null, "full", "am", "pm"];
-    const STATUS_LABEL = { full: "종일 출근 🌞", am: "오전 반차 🌅 (오후 나와요)", pm: "오후 반차 🌆 (오전 나와요)" };
+    // 탭마다 참석 ↔ 불참 토글
     async function onDayClick(date) {
       if (!me) { toast("먼저 위에서 이름을 골라줘요!"); return; }
       const cur = store.get(gid, me, date);
-      const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
       try {
-        await store.setStatus(gid, me, date, next);
+        await store.setStatus(gid, me, date, cur ? null : "full");
         renderDays();
-        toast(`${date} · ${STATUS_LABEL[next] || "안 나옴 ❌"}`);
+        toast(cur ? `${date} 불참` : `${date} 참석 ✓`);
       } catch (e) {
         console.error(e);
         toast("저장 실패 😢 다시 시도해줘요");

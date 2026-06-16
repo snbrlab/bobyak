@@ -212,14 +212,8 @@ body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   animation: pop .22s ease;
 }
-/* 종일: 꽉 / 오전반차(am): 오른쪽 반쪽 / 오후반차(pm): 왼쪽 반쪽 색칠 */
+/* 참석: 멤버 색으로 꽉 채움 (반차 개념 없음) */
 .tags .ptag.full { background: var(--c); }
-.tags .ptag.am {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 20%, #fff) 0 50%, var(--c) 50% 100%);
-}
-.tags .ptag.pm {
-  background: linear-gradient(90deg, var(--c) 0 50%, color-mix(in srgb, var(--c) 20%, #fff) 50% 100%);
-}
 /* 안 나오는 사람 자리(빈 슬롯) — 자리만 유지, 거의 안 보이게 */
 .tags .ptag.empty { background: transparent; animation: none; }
 .tags .ptag.more { background: transparent !important; color: var(--ink-soft); font-size: .58rem; }
