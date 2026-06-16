@@ -145,6 +145,18 @@ body {
 .pick-hint b { color: var(--accent); }
 
 /* ---------- 달력 ---------- */
+/* 뷰 전환 토글 (일간/주간) */
+.view-toggle {
+  display: flex; gap: 4px; background: #f6ece4; border-radius: 999px;
+  padding: 4px; margin: 0 auto 12px; width: fit-content;
+}
+.view-toggle .vt {
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-body); font-weight: 700; font-size: .95rem; color: var(--ink-soft);
+  padding: 6px 20px; border-radius: 999px; transition: background .15s, color .15s;
+}
+.view-toggle .vt.active { background: #fff; color: var(--accent); box-shadow: 0 2px 6px rgba(214,165,140,.25); }
+
 .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .cal-title { font-family: var(--font-head); font-weight: 700; font-size: 2rem; }
 .nav-btn {
@@ -235,3 +247,38 @@ body {
 .toast.show { opacity: .96; transform: translateX(-50%) translateY(0); }
 
 .calendar.locked .days { opacity: .45; filter: grayscale(.3); }
+.calendar.locked .dayview { opacity: .55; filter: grayscale(.25); }
+
+/* ---------- 일간: 둥근 식탁 + 밥그릇 ---------- */
+.dayview { display: flex; justify-content: center; padding: 12px 0 4px; }
+.table-wrap { position: relative; width: 280px; height: 280px; }
+.table-center {
+  position: absolute; left: 50%; top: 50%; width: 208px; height: 208px; margin: -104px;
+  border-radius: 50%; border: 3px solid #ecd8c6;
+  background: radial-gradient(circle at 50% 38%, #fff7f0, #f0ddcd);
+  box-shadow: inset 0 6px 16px rgba(180,140,110,.30), 0 8px 18px rgba(180,140,110,.22);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.table-center.allin {
+  background: linear-gradient(120deg, #ffd0e4, #ffe7b8, #cdf6e0, #c9e7ff, #ffd0e4);
+  background-size: 320% 320%; border-color: #ffc2d6;
+  animation: allinFlow 3s ease infinite, allinGlow 1.3s ease-in-out infinite;
+}
+.table-center .tc-num { font-family: var(--font-head); font-weight: 700; font-size: 2rem; color: var(--accent); line-height: 1; }
+.table-center .tc-cnt { font-size: .85rem; color: var(--ink-soft); }
+.seat {
+  position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
+  text-align: center; z-index: 2; border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-body);
+}
+.seat:active .bowl { transform: scale(.86); }
+.seat .bowl { font-size: 1.95rem; line-height: 1.05; transition: transform .1s; filter: drop-shadow(0 2px 2px rgba(140,100,70,.3)); }
+.seat .snm { font-size: .74rem; font-weight: 700; margin-top: -2px; }
+.seat.absent { opacity: .42; }
+.seat.absent .bowl { filter: none; }
+.seat.me .snm { text-decoration: underline; text-underline-offset: 2px; }
+.seat.me::after {
+  content: "나"; position: absolute; top: -4px; right: 6px;
+  background: var(--accent); color: #fff; font-size: .55rem; font-weight: 700;
+  border-radius: 999px; padding: 0 5px; line-height: 1.5;
+}

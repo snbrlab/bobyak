@@ -267,7 +267,12 @@
     const t = todayParts();
     function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
     function addDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+    function snapWeekday(d) { let x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); while (x.getDay() === 0 || x.getDay() === 6) x = addDays(x, 1); return x; }
     let weekStart = startOfWeek(new Date()); // 보고 있는 주의 월요일
+    let currentDay = snapWeekday(new Date()); // 일간 뷰에서 보고 있는 날
+
+    const VKEY = `bobyak_view_${gid}`;
+    let viewMode = localStorage.getItem(VKEY) === "day" ? "day" : "week";
 
     const MEKEY = `bobyak_me_${gid}`;
     let me = localStorage.getItem(MEKEY);
@@ -389,12 +394,20 @@
     }
 
 
+    // 뷰 디스패처
     function renderDays() {
       calEl.classList.toggle("locked", !me);
+      document.querySelector(".weekdays").classList.toggle("hidden", viewMode === "day");
+      daysEl.classList.toggle("days", viewMode === "week");
+      daysEl.classList.toggle("dayview", viewMode === "day");
+      document.querySelectorAll(".vt").forEach((b) => b.classList.toggle("active", b.dataset.mode === viewMode));
+      $("todayBtn").textContent = viewMode === "day" ? "오늘로" : "이번 주로";
       daysEl.innerHTML = "";
-      const myColor = me ? memberByName[me].color : null;
+      if (viewMode === "day") renderDay(); else renderWeek();
+    }
 
-      // 이번 주 평일(월~금) 범위 제목
+    function renderWeek() {
+      const myColor = me ? memberByName[me].color : null;
       const s = weekStart, e = addDays(weekStart, 4);
       $("calTitle").textContent =
         `${s.getMonth() + 1}월 ${s.getDate()}일 – ${e.getMonth() + 1}월 ${e.getDate()}일`;
@@ -418,12 +431,57 @@
             ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
             : `<span class="ptag empty"></span>`;
         }).join("");
-        // 전원 출근하는 날 → 칸 색으로만 축하 (레이아웃 안 밀리게)
+        // 전원 참석하는 날 → 칸 색으로만 축하 (레이아웃 안 밀리게)
         if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
         cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
       }
+    }
+
+    // 일간: 둥근 식탁에 밥그릇(참석 🍚 / 불참 🥣)
+    function renderDay() {
+      const day = currentDay;
+      const yy = day.getFullYear(), mm = day.getMonth(), dd = day.getDate();
+      const date = ymd(yy, mm, dd);
+      const wd = ["일", "월", "화", "수", "목", "금", "토"][day.getDay()];
+      const isToday = (yy === t.y && mm === t.m && dd === t.d);
+      $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
+
+      const n = members.length, R = 74;
+      let cnt = 0;
+      const seats = members.map((m, i) => {
+        const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const x = Math.cos(ang) * R, y = Math.sin(ang) * R;
+        const on = !!store.get(gid, m.name, date);
+        if (on) cnt++;
+        const isMe = me === m.name;
+        return `<button class="seat ${on ? "" : "absent"} ${isMe ? "me" : ""}" data-name="${m.name}"
+          style="transform:translate(${x}px,${y}px)">
+          <div class="bowl">${on ? "🍚" : "🥣"}</div>
+          <div class="snm" style="color:${m.color}">${m.name}</div></button>`;
+      }).join("");
+      const allin = members.length >= 2 && cnt === members.length;
+      daysEl.innerHTML =
+        `<div class="table-wrap">
+          <div class="table-center ${allin ? "allin" : ""}">
+            <div class="tc-num">${cnt}/${members.length}</div><div class="tc-cnt">참석</div>
+          </div>${seats}
+        </div>`;
+      daysEl.querySelectorAll(".seat").forEach((btn) => {
+        btn.onclick = () => onSeatClick(btn.dataset.name, date);
+      });
+    }
+
+    // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 참석 토글
+    function onSeatClick(name, date) {
+      if (me !== name) {
+        me = name; localStorage.setItem(MEKEY, me);
+        renderChips(); renderDays();
+        toast(`${name}(으)로 설정했어요! 한 번 더 누르면 참석/불참`);
+        return;
+      }
+      onDayClick(date);
     }
 
     // 탭마다 참석 ↔ 불참 토글
@@ -440,9 +498,20 @@
       }
     }
 
-    $("prevBtn").onclick = () => { weekStart = addDays(weekStart, -7); renderDays(); };
-    $("nextBtn").onclick = () => { weekStart = addDays(weekStart, 7); renderDays(); };
-    $("todayBtn").onclick = () => { weekStart = startOfWeek(new Date()); renderDays(); };
+    function moveDay(delta) {
+      let d = addDays(currentDay, delta);
+      while (d.getDay() === 0 || d.getDay() === 6) d = addDays(d, delta > 0 ? 1 : -1);
+      currentDay = d;
+    }
+
+    // 뷰 전환 토글
+    document.querySelectorAll(".vt").forEach((b) => {
+      b.onclick = () => { viewMode = b.dataset.mode; localStorage.setItem(VKEY, viewMode); renderDays(); };
+    });
+
+    $("prevBtn").onclick = () => { viewMode === "day" ? moveDay(-1) : (weekStart = addDays(weekStart, -7)); renderDays(); };
+    $("nextBtn").onclick = () => { viewMode === "day" ? moveDay(1) : (weekStart = addDays(weekStart, 7)); renderDays(); };
+    $("todayBtn").onclick = () => { viewMode === "day" ? (currentDay = snapWeekday(new Date())) : (weekStart = startOfWeek(new Date())); renderDays(); };
 
     renderChips();
     renderDays();
