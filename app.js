@@ -10,8 +10,9 @@
   const palette = cfg.palette;
   const MAX_MEMBERS = 10; // 모임 최대 인원
 
-  // ---------- 테마 (큐트 / 다크) ----------
+  // ---------- 테마 = 식사 (큐트/낮=점심, 다크/밤=저녁) ----------
   const THEME_KEY = "bobyak_theme";
+  let activeRender = null; // 현재 달력 다시 그리기 훅
   function applyTheme(th) {
     document.documentElement.dataset.theme = th;
     const btn = document.getElementById("themeBtn");
@@ -24,7 +25,19 @@
     theme = theme === "dark" ? "cute" : "dark";
     localStorage.setItem(THEME_KEY, theme);
     applyTheme(theme);
+    if (activeRender) activeRender(); // 점심↔저녁 전환 반영
   };
+
+  // 현재 식사: 큐트=점심(lunch), 다크=저녁(dinner)
+  function currentMeal() { return document.documentElement.dataset.theme === "dark" ? "dinner" : "lunch"; }
+  // 레거시 'full'은 점심·저녁 둘 다로 간주
+  function attendsMeal(status, meal) { return status === "both" || status === "full" || status === meal; }
+  function toggledMeal(cur, meal) {
+    let l = cur === "lunch" || cur === "both" || cur === "full";
+    let d = cur === "dinner" || cur === "both" || cur === "full";
+    if (meal === "lunch") l = !l; else d = !d;
+    return l && d ? "both" : l ? "lunch" : d ? "dinner" : null;
+  }
 
   // ---------- 날짜 유틸 (KST 로컬 기준, toISOString 금지!) ----------
   const pad = (n) => String(n).padStart(2, "0");
@@ -206,6 +219,7 @@
   //  화면 A — 모임 만들기
   // =========================================================
   function renderCreate() {
+    activeRender = null;
     $("screenCreate").classList.remove("hidden");
     $("screenView").classList.add("hidden");
     $("subtitle").textContent = "밥 먹고 합시다!";
@@ -442,6 +456,8 @@
 
     // 뷰 디스패처
     function renderDays() {
+      const ml = $("mealLabel");
+      if (ml) ml.textContent = currentMeal() === "dinner" ? "🌙 저녁 약속" : "🌞 점심 약속";
       calEl.classList.toggle("locked", !me);
       document.querySelector(".weekdays").classList.toggle("hidden", viewMode === "day");
       daysEl.classList.toggle("days", viewMode !== "day");
@@ -456,20 +472,22 @@
 
     // 날짜 칸 하나 만들기 (주간/월간 공통)
     function buildDayCell(yy, mm, dd) {
+      const meal = currentMeal();
       const date = ymd(yy, mm, dd);
       const myColor = me ? memberByName[me].color : null;
       const cell = document.createElement("div");
       cell.className = "day";
       if (yy === t.y && mm === t.m && dd === t.d) cell.classList.add("today");
-      const myStatus = me ? store.get(gid, me, date) : null;
-      if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
+      if (me && attendsMeal(store.get(gid, me, date), meal)) {
+        cell.classList.add("mine"); cell.style.setProperty("--myc", myColor);
+      }
       // 멤버 순서 고정: 전원을 같은 순서로, 안 나오는 날은 빈 슬롯으로 자리 유지
       let presentCount = 0;
       const tags = members.map((m) => {
-        const st = store.get(gid, m.name, date);
-        if (st) presentCount++;
-        return st
-          ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
+        const on = attendsMeal(store.get(gid, m.name, date), meal);
+        if (on) presentCount++;
+        return on
+          ? `<span class="ptag full" style="--c:${m.color}">${m.name}</span>`
           : `<span class="ptag empty"></span>`;
       }).join("");
       if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
@@ -514,12 +532,13 @@
       const isToday = (yy === t.y && mm === t.m && dd === t.d);
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
+      const meal = currentMeal();
       const n = members.length, R = 88;
       let cnt = 0;
       const seats = members.map((m, i) => {
         const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
         const x = Math.cos(ang) * R, y = Math.sin(ang) * R;
-        const on = !!store.get(gid, m.name, date);
+        const on = attendsMeal(store.get(gid, m.name, date), meal);
         if (on) cnt++;
         const isMe = me === m.name;
         return `<button class="seat ${on ? "" : "absent"} ${isMe ? "me" : ""}" data-name="${m.name}"
@@ -531,7 +550,8 @@
       daysEl.innerHTML =
         `<div class="table-wrap">
           <div class="table-center ${allin ? "allin" : ""}">
-            <div class="tc-num">${cnt}/${members.length}</div><div class="tc-cnt">참석</div>
+            <div class="tc-num">${cnt}/${members.length}</div>
+            <div class="tc-cnt">${meal === "dinner" ? "저녁" : "점심"}</div>
           </div>${seats}
         </div>`;
       daysEl.querySelectorAll(".seat").forEach((btn) => {
@@ -550,14 +570,17 @@
       onDayClick(date);
     }
 
-    // 탭마다 참석 ↔ 불참 토글
+    // 탭마다 (현재 식사) 참석 ↔ 불참 토글
     async function onDayClick(date) {
       if (!me) { toast("먼저 위에서 이름을 골라줘요!"); return; }
+      const meal = currentMeal();
       const cur = store.get(gid, me, date);
+      const next = toggledMeal(cur, meal);
+      const ml = meal === "dinner" ? "저녁 🌙" : "점심 🌞";
       try {
-        await store.setStatus(gid, me, date, cur ? null : "full");
+        await store.setStatus(gid, me, date, next);
         renderDays();
-        toast(cur ? `${date} 불참` : `${date} 참석 ✓`);
+        toast(attendsMeal(next, meal) ? `${date} ${ml} 참석 ✓` : `${date} ${ml} 불참`);
       } catch (e) {
         console.error(e);
         toast("저장 실패 😢 다시 시도해줘요");
@@ -595,6 +618,7 @@
       renderDays();
     };
 
+    activeRender = renderDays; // 테마(점심/저녁) 전환 시 이 달력 다시 그림
     renderChips();
     renderDays();
 
