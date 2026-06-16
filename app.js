@@ -55,6 +55,8 @@
 
   // 메모리 키
   const ak = (gid, name, date) => `${gid}|${name}|${date}`;
+  const nk = (gid, name, date, meal) => `${gid}|${name}|${date}|${meal}`; // 사유(메모) 키
+  const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   // =========================================================
   //  저장소 추상화
@@ -65,14 +67,24 @@
     mode: "로컬",
     GK: "bobyak_groups_v2",
     MKEY: "bobyak_marks_v3",
+    NKEY: "bobyak_notes_v1",
     groups: {},
-    marks: {}, // key -> 'full' | 'am' | 'pm'
+    marks: {}, // key -> 'lunch' | 'dinner' | 'both'
+    notes: {}, // nk -> 사유 텍스트
     async init() {
       try { this.groups = JSON.parse(localStorage.getItem(this.GK) || "{}"); } catch { this.groups = {}; }
       try { this.marks = JSON.parse(localStorage.getItem(this.MKEY) || "{}"); } catch { this.marks = {}; }
+      try { this.notes = JSON.parse(localStorage.getItem(this.NKEY) || "{}"); } catch { this.notes = {}; }
     },
     _saveG() { localStorage.setItem(this.GK, JSON.stringify(this.groups)); },
     _saveM() { localStorage.setItem(this.MKEY, JSON.stringify(this.marks)); },
+    _saveN() { localStorage.setItem(this.NKEY, JSON.stringify(this.notes)); },
+    getNote(gid, name, date, meal) { return this.notes[nk(gid, name, date, meal)] || ""; },
+    async setNote(gid, name, date, meal, text) {
+      const k = nk(gid, name, date, meal);
+      if (text) this.notes[k] = text; else delete this.notes[k];
+      this._saveN();
+    },
     async createGroup(id, name, members) { this.groups[id] = { name, members }; this._saveG(); },
     async getGroup(id) { return this.groups[id] || null; },
     async setMembers(id, members) { if (this.groups[id]) { this.groups[id].members = members; this._saveG(); } },
@@ -88,12 +100,16 @@
       Object.keys(this.marks).forEach((k) => {
         if (k.startsWith(pre)) { this.marks[`${gid}|${newN}|${k.slice(pre.length)}`] = this.marks[k]; delete this.marks[k]; }
       });
-      this._saveM();
+      Object.keys(this.notes).forEach((k) => {
+        if (k.startsWith(pre)) { this.notes[`${gid}|${newN}|${k.slice(pre.length)}`] = this.notes[k]; delete this.notes[k]; }
+      });
+      this._saveM(); this._saveN();
     },
     async deleteMemberData(gid, name) {
       const pre = `${gid}|${name}|`;
       Object.keys(this.marks).forEach((k) => { if (k.startsWith(pre)) delete this.marks[k]; });
-      this._saveM();
+      Object.keys(this.notes).forEach((k) => { if (k.startsWith(pre)) delete this.notes[k]; });
+      this._saveM(); this._saveN();
     },
   };
 
@@ -113,7 +129,8 @@
   const SupaStore = {
     mode: "공유",
     client: null,
-    marks: {}, // key -> 'full' | 'am' | 'pm'
+    marks: {}, // key -> 'lunch' | 'dinner' | 'both'
+    notes: {}, // nk -> 사유 텍스트
     _cb: null,
     async init() {
       await loadSupabaseLib();
@@ -140,6 +157,12 @@
       if (error) throw error;
       this.marks = {};
       data.forEach((r) => { this.marks[ak(gid, r.member, r.date)] = r.status || "full"; });
+      // 사유(notes) 로드 — 테이블이 없으면 무시 (마이그레이션 전)
+      this.notes = {};
+      try {
+        const nr = await this.client.from("notes").select("member,date,meal,text").eq("group_id", gid);
+        if (!nr.error && nr.data) nr.data.forEach((r) => { if (r.text) this.notes[nk(gid, r.member, r.date, r.meal)] = r.text; });
+      } catch (_) { /* notes 테이블 없음 */ }
       this.client
         .channel("abs-" + gid)
         .on("postgres_changes",
@@ -149,9 +172,33 @@
             else this.marks[ak(gid, p.new.member, p.new.date)] = p.new.status || "full";
             this._cb && this._cb();
           })
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "notes", filter: `group_id=eq.${gid}` },
+          (p) => {
+            const key = nk(gid, (p.new || p.old).member, (p.new || p.old).date, (p.new || p.old).meal);
+            if (p.eventType === "DELETE" || !p.new.text) delete this.notes[key];
+            else this.notes[key] = p.new.text;
+            this._cb && this._cb();
+          })
         .subscribe();
     },
     get(gid, name, date) { return this.marks[ak(gid, name, date)] || null; },
+    getNote(gid, name, date, meal) { return this.notes[nk(gid, name, date, meal)] || ""; },
+    async setNote(gid, name, date, meal, text) {
+      const k = nk(gid, name, date, meal);
+      const prev = this.notes[k] || "";
+      if (text) {
+        this.notes[k] = text;
+        const { error } = await this.client.from("notes")
+          .upsert({ group_id: gid, member: name, date, meal, text }, { onConflict: "group_id,member,date,meal" });
+        if (error) { prev ? (this.notes[k] = prev) : delete this.notes[k]; throw error; }
+      } else {
+        delete this.notes[k];
+        const { error } = await this.client.from("notes")
+          .delete().eq("group_id", gid).eq("member", name).eq("date", date).eq("meal", meal);
+        if (error) { if (prev) this.notes[k] = prev; throw error; }
+      }
+    },
     async setStatus(gid, name, date, status) {
       const k = ak(gid, name, date);
       const prev = this.marks[k] || null;
@@ -171,17 +218,23 @@
       const { error } = await this.client.from("absences")
         .update({ member: newN }).eq("group_id", gid).eq("member", oldN);
       if (error) throw error;
+      await this.client.from("notes").update({ member: newN }).eq("group_id", gid).eq("member", oldN);
       const pre = `${gid}|${oldN}|`;
-      Object.keys(this.marks).forEach((k) => {
-        if (k.startsWith(pre)) { this.marks[`${gid}|${newN}|${k.slice(pre.length)}`] = this.marks[k]; delete this.marks[k]; }
+      [this.marks, this.notes].forEach((map) => {
+        Object.keys(map).forEach((k) => {
+          if (k.startsWith(pre)) { map[`${gid}|${newN}|${k.slice(pre.length)}`] = map[k]; delete map[k]; }
+        });
       });
     },
     async deleteMemberData(gid, name) {
       const { error } = await this.client.from("absences")
         .delete().eq("group_id", gid).eq("member", name);
       if (error) throw error;
+      await this.client.from("notes").delete().eq("group_id", gid).eq("member", name);
       const pre = `${gid}|${name}|`;
-      Object.keys(this.marks).forEach((k) => { if (k.startsWith(pre)) delete this.marks[k]; });
+      [this.marks, this.notes].forEach((map) => {
+        Object.keys(map).forEach((k) => { if (k.startsWith(pre)) delete map[k]; });
+      });
     },
   };
 
@@ -541,10 +594,17 @@
         const on = attendsMeal(store.get(gid, m.name, date), meal);
         if (on) cnt++;
         const isMe = me === m.name;
-        return `<button class="seat ${on ? "" : "absent"} ${isMe ? "me" : ""}" data-name="${m.name}"
+        const note = store.getNote(gid, m.name, date, meal);
+        const bubble = note
+          ? `<div class="bubble has" data-name="${m.name}">${escapeHtml(note)}</div>`
+          : (isMe ? `<div class="bubble add" data-name="${m.name}">＋사유</div>` : "");
+        return `<div class="seat ${on ? "" : "absent"} ${isMe ? "me" : ""}"
           style="transform:translate(${x}px,${y}px)">
-          <div class="bowl">${on ? "🍚" : "🥣"}</div>
-          <div class="snm" style="background:${m.color}">${m.name}</div></button>`;
+          ${bubble}
+          <div class="seat-main" data-name="${m.name}">
+            <div class="bowl">${on ? "🍚" : "🥣"}</div>
+            <div class="snm" style="background:${m.color}">${m.name}</div>
+          </div></div>`;
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
       daysEl.innerHTML =
@@ -554,9 +614,34 @@
             <div class="tc-cnt">${meal === "dinner" ? "저녁" : "점심"}</div>
           </div>${seats}
         </div>`;
-      daysEl.querySelectorAll(".seat").forEach((btn) => {
-        btn.onclick = () => onSeatClick(btn.dataset.name, date);
+      daysEl.querySelectorAll(".seat-main").forEach((el) => {
+        el.onclick = () => onSeatClick(el.dataset.name, date);
       });
+      daysEl.querySelectorAll(".bubble").forEach((el) => {
+        el.onclick = (e) => { e.stopPropagation(); onBubbleClick(el.dataset.name, date); };
+      });
+    }
+
+    // 말풍선 탭 → 본인이면 사유 편집, 남이면 전체 내용 토스트로
+    async function onBubbleClick(name, date) {
+      const meal = currentMeal();
+      if (me !== name) {
+        const txt = store.getNote(gid, name, date, meal);
+        if (txt) toast(`${name}: ${txt}`);
+        return;
+      }
+      const cur = store.getNote(gid, me, date, meal);
+      const label = meal === "dinner" ? "저녁" : "점심";
+      const txt = (prompt(`${date} ${label} 사유/메모 (비우면 삭제)`, cur) || "").trim();
+      if (txt === cur) return;
+      try {
+        await store.setNote(gid, me, date, meal, txt);
+        renderDays();
+        toast(txt ? "사유 저장 ✓" : "사유 삭제");
+      } catch (e) {
+        console.error(e);
+        toast("사유 저장 실패 😢 (공유모드면 notes 마이그레이션 필요)");
+      }
     }
 
     // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 참석 토글

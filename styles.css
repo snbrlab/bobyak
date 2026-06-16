@@ -34,14 +34,14 @@
   --mix: #ffffff;
   --logo-shadow: #ffe0d0;
 
-  --cloth-bg: #f7f2ee;
-  --dot: rgba(120, 110, 105, .16);
-  --table-1: #eccfb0;
-  --table-2: #cda079;
-  --table-border: #c79a72;
-  --table-ishadow: rgba(130, 90, 55, .40);
-  --table-dshadow: rgba(130, 90, 55, .30);
-  --tc-cnt: #6b4a32;
+  --cloth-bg: #fffdf2;
+  --check: rgba(247, 205, 80, .42);
+  --table-1: #fff8ef;
+  --table-2: #f6d6a4;
+  --table-border: #ecc488;
+  --table-ishadow: rgba(150, 110, 60, .28);
+  --table-dshadow: rgba(150, 110, 60, .22);
+  --tc-cnt: #8a6233;
 
   /* 폰트 — 바꾸려면 여기만. 제목 Dongle / 본문 Gowun Dodum */
   --font-head: "Dongle", system-ui, sans-serif;
@@ -79,7 +79,7 @@
   --logo-shadow: rgba(255, 255, 255, .10);
 
   --cloth-bg: #1c1c22;
-  --dot: rgba(255, 255, 255, .06);
+  --check: rgba(255, 255, 255, .055);
   --table-1: #3a3a42;
   --table-2: #26262c;
   --table-border: #50505a;
@@ -331,15 +331,14 @@ body {
 .calendar.locked .dayview { opacity: .55; filter: grayscale(.25); }
 
 /* ---------- 일간: 둥근 식탁 + 밥그릇 ---------- */
+/* 노란 깅엄 체크 식탁보 */
 .dayview {
   display: flex; justify-content: center; align-items: center;
   padding: 24px 8px; margin-top: 4px; border-radius: 20px;
   background-color: var(--cloth-bg);
   background-image:
-    radial-gradient(var(--dot) 21%, transparent 22%),
-    radial-gradient(var(--dot) 21%, transparent 22%);
-  background-size: 22px 22px;
-  background-position: 0 0, 11px 11px;
+    repeating-linear-gradient(0deg, var(--check) 0 11px, transparent 11px 22px),
+    repeating-linear-gradient(90deg, var(--check) 0 11px, transparent 11px 22px);
   box-shadow: inset 0 2px 8px rgba(0,0,0,.10);
 }
 .table-wrap { position: relative; width: 320px; height: 320px; max-width: 100%; }
@@ -359,20 +358,35 @@ body {
 .table-center .tc-cnt { font-size: .85rem; font-weight: 700; color: var(--tc-cnt); }
 .seat {
   position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
-  text-align: center; z-index: 2; border: none; background: transparent; cursor: pointer;
-  font-family: var(--font-body);
+  text-align: center; z-index: 2; font-family: var(--font-body);
 }
-.seat:active .bowl { transform: scale(.86); }
+.seat-main { cursor: pointer; }
+.seat-main:active .bowl { transform: scale(.86); }
 .seat .bowl { font-size: 2.15rem; line-height: 1.05; transition: transform .1s; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
 .seat .snm {
   display: inline-block; font-size: .72rem; font-weight: 700; color: var(--pill-text);
   border-radius: 999px; padding: 1px 9px; margin-top: 1px; box-shadow: 0 1px 3px rgba(0,0,0,.25);
 }
-.seat.absent { opacity: .42; }
-.seat.absent .bowl { filter: none; }
+.seat.absent .seat-main { opacity: .42; }
+.seat.absent .seat-main .bowl { filter: none; }
 .seat.me .snm { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--accent); }
 .seat.me::after {
-  content: "나"; position: absolute; top: -4px; right: 6px;
+  content: "나"; position: absolute; top: -4px; right: 6px; z-index: 4;
   background: var(--accent); color: var(--on-accent); font-size: .55rem; font-weight: 700;
   border-radius: 999px; padding: 0 5px; line-height: 1.5;
 }
+
+/* 사유 말풍선 */
+.bubble {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  margin-bottom: 4px; max-width: 96px; min-width: 34px;
+  background: var(--card); color: var(--ink); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 3px 8px; font-size: .62rem; font-weight: 700;
+  line-height: 1.25; word-break: break-word; cursor: pointer; z-index: 5;
+  box-shadow: 0 3px 8px rgba(0,0,0,.2);
+}
+.bubble::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--card);
+}
+.bubble.add { color: var(--ink-soft); border-style: dashed; opacity: .85; }

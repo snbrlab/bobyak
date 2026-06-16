@@ -26,6 +26,19 @@ create index if not exists absences_group_idx on absences (group_id);
 -- 이미 테이블이 있던 경우용 (컬럼 추가)
 alter table absences add column if not exists status text not null default 'full';
 
+-- 사유(말풍선 메모): 멤버가 날짜·식사별로 한 줄 남김
+create table if not exists notes (
+  id         bigint generated always as identity primary key,
+  group_id   text not null references groups(id) on delete cascade,
+  member     text not null,
+  date       text not null,                 -- 'YYYY-MM-DD'
+  meal       text not null,                 -- 'lunch' | 'dinner'
+  text       text not null default '',
+  created_at timestamptz default now(),
+  unique (group_id, member, date, meal)
+);
+create index if not exists notes_group_idx on notes (group_id);
+
 -- 로그인 없는 단톡방용: 누구나 읽기/쓰기 허용.
 alter table groups   enable row level security;
 alter table absences enable row level security;
@@ -46,6 +59,17 @@ create policy "abs insert" on absences for insert with check (true);
 create policy "abs update" on absences for update using (true) with check (true);  -- 반차 변경(upsert)·이름수정용
 create policy "abs delete" on absences for delete using (true);
 
+alter table notes enable row level security;
+drop policy if exists "notes read"   on notes;
+drop policy if exists "notes insert" on notes;
+drop policy if exists "notes update" on notes;
+drop policy if exists "notes delete" on notes;
+create policy "notes read"   on notes for select using (true);
+create policy "notes insert" on notes for insert with check (true);
+create policy "notes update" on notes for update using (true) with check (true);
+create policy "notes delete" on notes for delete using (true);
+
 -- 실시간 동기화 활성화
 alter publication supabase_realtime add table absences;
 alter publication supabase_realtime add table groups;
+alter publication supabase_realtime add table notes;
