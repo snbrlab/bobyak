@@ -267,7 +267,7 @@ body {
   font-weight: 700; cursor: pointer; text-decoration: underline dotted;
 }
 .mat-btn {
-  display: block; margin: -4px auto 12px; cursor: pointer;
+  display: block; margin: 12px auto 2px; cursor: pointer;
   border: 2px solid var(--line); background: var(--card); color: var(--ink);
   border-radius: 999px; padding: 5px 14px; font-family: var(--font-body);
   font-size: .88rem; font-weight: 700; transition: transform .1s;
@@ -387,16 +387,16 @@ body {
 /* 노란 깅엄 체크 식탁보 */
 .dayview {
   display: flex; flex-direction: column; justify-content: center; align-items: center;
-  padding: 24px 8px; margin-top: 4px; border-radius: 20px;
+  padding: 12px 6px; margin-top: 4px; border-radius: 20px;
   background-color: var(--cloth-bg);
   background-image:
     repeating-linear-gradient(0deg, var(--check) 0 11px, transparent 11px 22px),
     repeating-linear-gradient(90deg, var(--check) 0 11px, transparent 11px 22px);
   box-shadow: inset 0 2px 8px rgba(0,0,0,.10);
 }
-.table-wrap { position: relative; width: 344px; height: 344px; max-width: 100%; }
+.table-wrap { position: relative; width: 360px; height: 360px; max-width: 100%; }
 .table-center {
-  position: absolute; left: 50%; top: 50%; width: 274px; height: 274px; margin: -137px;
+  position: absolute; left: 50%; top: 50%; width: 296px; height: 296px; margin: -148px;
   border-radius: 50%; border: 5px solid var(--table-border);
   background: var(--table-bg);
   box-shadow: inset 0 4px 14px var(--table-ishadow), 0 10px 24px var(--table-dshadow);
@@ -434,8 +434,8 @@ body {
   box-shadow: inset 0 1px 5px rgba(40,60,50,.3), inset 0 0 0 1px rgba(0,0,0,.07);
 }
 .lcd-time {
-  font-family: "Courier New", ui-monospace, monospace; font-weight: 700;
-  font-size: 1.7rem; letter-spacing: 1px; line-height: .95; color: #29322c;
+  font-family: "DSEG7 Classic", "Courier New", ui-monospace, monospace; font-weight: 700;
+  font-size: 1.5rem; letter-spacing: 1px; line-height: .95; color: #29322c;
 }
 .digi-empty .lcd-time { color: #8b9c90; }
 .lcd-side {
@@ -451,12 +451,20 @@ body {
   transform: skewX(-18deg); pointer-events: none;
 }
 
-/* 테이블 아래 참석 카운트 */
+/* 테이블 아래: 참석 카운트 + 👍 */
+.table-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
 .table-count {
-  margin-top: 14px; font-family: var(--font-head); font-weight: 700; font-size: 1.7rem;
+  font-family: var(--font-head); font-weight: 700; font-size: 1.7rem;
   color: var(--ink); background: var(--card); padding: 3px 18px; border-radius: 999px;
   box-shadow: var(--shadow);
 }
+.table-foot .meet-like {
+  border: none; cursor: pointer; font-family: var(--font-body); font-weight: 700;
+  border-radius: 999px; padding: 8px 16px; font-size: 1rem;
+  background: var(--card); color: var(--ink); box-shadow: var(--shadow); transition: transform .1s, background .15s;
+}
+.table-foot .meet-like:active { transform: scale(.93); }
+.table-foot .meet-like.on { background: var(--accent); color: var(--on-accent); }
 .seat {
   position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
   text-align: center; z-index: 2; font-family: var(--font-body);

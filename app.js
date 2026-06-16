@@ -706,8 +706,7 @@
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
       const meal = currentMeal();
-      renderMeetBar(date, meal);
-      const n = members.length, R = 102;
+      const n = members.length, R = 120;
       let cnt = 0;
       const seats = members.map((m, i) => {
         const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
@@ -729,14 +728,22 @@
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
       const mu = getMeetup(date, meal);
+      const liked = me && mu.likes.includes(me);
+      const likeBtn = mu.time
+        ? `<button class="meet-like ${liked ? "on" : ""}" id="meetLike" title="${escapeHtml(mu.likes.join(", "))}">👍 ${mu.likes.length}</button>`
+        : "";
       daysEl.innerHTML =
         `<div class="table-wrap">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
+        <div class="table-foot">
+          <span class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</span>${likeBtn}
+        </div>`;
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
       if (dc) dc.onclick = () => openMeetPicker(date, meal);
+      const lk = document.getElementById("meetLike");
+      if (lk) lk.onclick = () => toggleMeetLike(date, meal);
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
