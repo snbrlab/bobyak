@@ -394,9 +394,9 @@ body {
     repeating-linear-gradient(90deg, var(--check) 0 11px, transparent 11px 22px);
   box-shadow: inset 0 2px 8px rgba(0,0,0,.10);
 }
-.table-wrap { position: relative; width: 360px; height: 360px; max-width: 100%; }
+.table-wrap { position: relative; width: 344px; height: 344px; max-width: 100%; }
 .table-center {
-  position: absolute; left: 50%; top: 50%; width: 296px; height: 296px; margin: -148px;
+  position: absolute; left: 50%; top: 50%; width: 280px; height: 280px; margin: -140px;
   border-radius: 50%; border: 5px solid var(--table-border);
   background: var(--table-bg);
   box-shadow: inset 0 4px 14px var(--table-ishadow), 0 10px 24px var(--table-dshadow);
@@ -478,6 +478,10 @@ body {
 }
 .seat.absent .seat-main { opacity: .42; }
 .seat.absent .seat-main .bowl { filter: none; }
+/* 인원 많을 때: 그릇·이름 줄여 안 잘리게 */
+.table-wrap.dense .seat { width: 50px; margin-left: -25px; }
+.table-wrap.dense .bowl { font-size: 1.65rem; }
+.table-wrap.dense .snm { font-size: .62rem; padding: 1px 6px; }
 .seat.me .snm { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--accent); }
 .seat.me::after {
   content: "나"; position: absolute; top: -4px; right: 6px; z-index: 4;

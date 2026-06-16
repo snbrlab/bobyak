@@ -704,7 +704,9 @@
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
       const meal = currentMeal();
-      const n = members.length, R = 120;
+      const n = members.length;
+      const dense = n > 7;          // 인원 많으면 빽빽 모드
+      const R = dense ? 112 : 120;  // 자리 반경
       let cnt = 0;
       const seats = members.map((m, i) => {
         const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
@@ -727,7 +729,7 @@
       const allin = members.length >= 2 && cnt === members.length;
       const mu = getMeetup(date, meal);
       daysEl.innerHTML =
-        `<div class="table-wrap">
+        `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
         <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
