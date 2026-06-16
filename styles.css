@@ -36,12 +36,13 @@
 
   --cloth-bg: #fffdf2;
   --check: rgba(247, 205, 80, .42);
-  --table-1: #fff8ef;
-  --table-2: #f6d6a4;
-  --table-border: #ecc488;
-  --table-ishadow: rgba(150, 110, 60, .28);
-  --table-dshadow: rgba(150, 110, 60, .22);
-  --tc-cnt: #8a6233;
+  --table-1: #edc492;
+  --table-2: #bd8049;
+  --table-border: #8c5a2e;
+  --table-grain: rgba(108, 66, 26, .13);
+  --table-ishadow: rgba(110, 70, 30, .35);
+  --table-dshadow: rgba(110, 70, 30, .30);
+  --tc-cnt: #6b421a;
 
   /* 폰트 — 바꾸려면 여기만. 제목 Dongle / 본문 Gowun Dodum */
   --font-head: "Dongle", system-ui, sans-serif;
@@ -80,9 +81,10 @@
 
   --cloth-bg: #1c1c22;
   --check: rgba(255, 255, 255, .055);
-  --table-1: #3a3a42;
-  --table-2: #26262c;
-  --table-border: #50505a;
+  --table-1: #3e3e47;
+  --table-2: #25252b;
+  --table-border: #131318;
+  --table-grain: rgba(0, 0, 0, .22);
   --table-ishadow: rgba(0, 0, 0, .5);
   --table-dshadow: rgba(0, 0, 0, .45);
   --tc-cnt: #c8c8d0;
@@ -344,9 +346,15 @@ body {
 .table-wrap { position: relative; width: 344px; height: 344px; max-width: 100%; }
 .table-center {
   position: absolute; left: 50%; top: 50%; width: 274px; height: 274px; margin: -137px;
-  border-radius: 50%; border: 4px solid var(--table-border);
-  background: radial-gradient(circle at 50% 35%, var(--table-1), var(--table-2));
-  box-shadow: inset 0 8px 22px var(--table-ishadow), 0 10px 24px var(--table-dshadow);
+  border-radius: 50%; border: 7px solid var(--table-border);
+  /* 나뭇결(동심원 그레인) + 우드 톤 */
+  background:
+    repeating-radial-gradient(circle at 50% 50%, var(--table-grain) 0 1px, transparent 1px 9px),
+    radial-gradient(circle at 50% 34%, var(--table-1), var(--table-2));
+  box-shadow:
+    inset 0 0 0 4px rgba(0,0,0,.06),
+    inset 0 9px 24px var(--table-ishadow),
+    0 12px 26px var(--table-dshadow);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .table-center.allin {
