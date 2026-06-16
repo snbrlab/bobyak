@@ -31,10 +31,10 @@
   .seat.absent .bowl{filter:none;opacity:.4;}
   .seat.absent .name{opacity:.45;}
   /* 외식 배지: 밥그릇 앞(왼쪽 위) */
-  /* 외식 배지: 흰 동그라미 위에 아이콘 → 배경에 안 묻힘 */
-  .eat{position:absolute;left:-14px;top:-12px;width:27px;height:27px;font-size:1.05rem;
-    background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    box-shadow:0 2px 5px rgba(0,0,0,.22);animation:pop .3s ease;}
+  /* 외식 아이콘: 흰 테두리(글로우)로 배경에 안 묻히게 */
+  .eat{position:absolute;left:-12px;top:-11px;font-size:1.35rem;
+    filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0,0,0,.3));
+    animation:pop .3s ease;}
   @keyframes pop{0%{transform:scale(0) rotate(-20deg);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
   .name{display:inline-block;margin-top:2px;font-size:.78rem;font-weight:700;color:#4a3f3a;
     border-radius:999px;padding:1px 9px;box-shadow:0 1px 3px rgba(140,100,70,.22);}
