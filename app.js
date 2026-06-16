@@ -738,12 +738,14 @@
       const n = members.length;
       const dense = n > 7;          // 인원 많으면 빽빽 모드
       const R = dense ? 112 : 120;  // 자리 반경
-      let cnt = 0;
+      let cnt = 0, eatCnt = 0;
       const seats = members.map((m, i) => {
         const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
         const x = Math.cos(ang) * R, y = Math.sin(ang) * R;
         const on = attendsMeal(store.get(gid, m.name, date), meal);
         if (on) cnt++;
+        const eat = on && isEat(m.name, date, meal);
+        if (eat) eatCnt++;
         const isMe = me === m.name;
         const note = store.getNote(gid, m.name, date, meal);
         const bubble = note
@@ -753,6 +755,7 @@
           style="transform:translate(${x}px,${y}px)">
           ${bubble}
           <div class="seat-main" data-name="${m.name}">
+            ${eat ? `<span class="eat-icon">✋</span>` : ""}
             <div class="bowl">${on ? "🍚" : "🥣"}</div>
             <div class="snm" style="background:${m.color}">${m.name}</div>
           </div></div>`;
@@ -763,7 +766,7 @@
         `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
+        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}${eatCnt ? ` · ✋ 외식 제안 ${eatCnt}` : ""}</div>`;
       curDate = date; curMeal = meal; // 공유 버튼이 참조
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
@@ -798,15 +801,35 @@
       }
     }
 
-    // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 참석 토글
-    function onSeatClick(name, date) {
+    // 외식(✋) 플래그 — notes 테이블 재활용 (meal+"#eat")
+    function isEat(name, date, meal) { return store.getNote(gid, name, date, meal + "#eat") === "1"; }
+    async function setEat(name, date, meal, on) { await store.setNote(gid, name, date, meal + "#eat", on ? "1" : ""); }
+
+    // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 순환(불참→참석→외식→불참)
+    async function onSeatClick(name, date) {
       if (me !== name) {
         me = name; localStorage.setItem(MEKEY, me);
         renderChips(); renderDays();
-        toast(`${name}(으)로 설정했어요! 한 번 더 누르면 참석/불참`);
+        toast(`${name}(으)로 설정! 또 누르면 참석`);
         return;
       }
-      onDayClick(date);
+      const meal = currentMeal();
+      const ml = meal === "dinner" ? "저녁" : "점심";
+      const attending = attendsMeal(store.get(gid, me, date), meal);
+      try {
+        if (!attending) {
+          await store.setStatus(gid, me, date, toggledMeal(store.get(gid, me, date), meal));
+          toast(`${date} ${ml} 참석 🍚`);
+        } else if (!isEat(me, date, meal)) {
+          await setEat(me, date, meal, true);
+          toast(`${date} ${ml} 외식 제안 ✋`);
+        } else {
+          await setEat(me, date, meal, false);
+          await store.setStatus(gid, me, date, toggledMeal(store.get(gid, me, date), meal));
+          toast(`${date} ${ml} 불참`);
+        }
+        renderDays();
+      } catch (e) { console.error(e); toast("저장 실패 😢"); }
     }
 
     // 탭마다 (현재 식사) 참석 ↔ 불참 토글

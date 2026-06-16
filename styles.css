@@ -475,8 +475,15 @@ body {
   position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
   text-align: center; z-index: 2; font-family: var(--font-body);
 }
-.seat-main { cursor: pointer; }
+.seat-main { cursor: pointer; position: relative; }
 .seat-main:active .bowl { transform: scale(.86); }
+/* 외식 ✋ 배지 (밥그릇 앞, 흰 글로우로 또렷) */
+.eat-icon {
+  position: absolute; left: 1px; top: -7px; z-index: 3; font-size: 1.2rem; pointer-events: none;
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff) drop-shadow(0 1px 2px rgba(0,0,0,.3));
+  animation: pop .25s ease;
+}
+.table-wrap.dense .eat-icon { font-size: 1rem; top: -5px; }
 .seat .bowl { font-size: 2.15rem; line-height: 1.05; transition: transform .1s; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
 .seat .snm {
   display: inline-block; font-size: .72rem; font-weight: 700; color: var(--pill-text);
