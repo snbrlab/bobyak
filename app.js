@@ -265,9 +265,9 @@
     const members = group.members;
     const memberByName = Object.fromEntries(members.map((m) => [m.name, m]));
     const t = todayParts();
-    function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - x.getDay()); return x; }
+    function startOfWeek(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
     function addDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
-    let weekStart = startOfWeek(new Date()); // 보고 있는 주의 일요일
+    let weekStart = startOfWeek(new Date()); // 보고 있는 주의 월요일
 
     const MEKEY = `bobyak_me_${gid}`;
     let me = localStorage.getItem(MEKEY);
@@ -394,20 +394,17 @@
       daysEl.innerHTML = "";
       const myColor = me ? memberByName[me].color : null;
 
-      // 이번 주 7일 범위 제목
-      const s = weekStart, e = addDays(weekStart, 6);
+      // 이번 주 평일(월~금) 범위 제목
+      const s = weekStart, e = addDays(weekStart, 4);
       $("calTitle").textContent =
         `${s.getMonth() + 1}월 ${s.getDate()}일 – ${e.getMonth() + 1}월 ${e.getDate()}일`;
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 5; i++) {
         const day = addDays(weekStart, i);
         const yy = day.getFullYear(), mm = day.getMonth(), dd = day.getDate();
         const date = ymd(yy, mm, dd);
-        const dow = day.getDay();
         const cell = document.createElement("div");
         cell.className = "day";
-        if (dow === 0) cell.classList.add("sun");
-        if (dow === 6) cell.classList.add("sat");
         if (yy === t.y && mm === t.m && dd === t.d) cell.classList.add("today");
 
         const myStatus = me ? store.get(gid, me, date) : null;

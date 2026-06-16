@@ -159,7 +159,7 @@ body {
   font-weight: 700; cursor: pointer; text-decoration: underline dotted;
 }
 
-.weekdays, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.weekdays, .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .weekdays { margin-bottom: 6px; }
 .weekdays span { text-align: center; font-weight: 700; font-size: .95rem; color: var(--ink-soft); }
 .weekdays .sun { color: var(--sun); }
