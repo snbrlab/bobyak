@@ -260,6 +260,21 @@ body {
   color: var(--accent); font-family: var(--font-body); font-size: .92rem;
   font-weight: 700; cursor: pointer; text-decoration: underline dotted;
 }
+.mat-btn {
+  display: block; margin: -4px auto 12px; cursor: pointer;
+  border: 2px solid var(--line); background: var(--card); color: var(--ink);
+  border-radius: 999px; padding: 5px 14px; font-family: var(--font-body);
+  font-size: .88rem; font-weight: 700; transition: transform .1s;
+}
+.mat-btn:active { transform: scale(.94); }
+.mat-patterns { display: flex; gap: 8px; margin-bottom: 14px; }
+.mat-pat {
+  flex: 1; cursor: pointer; border: 2px solid var(--line); background: var(--card);
+  color: var(--ink); border-radius: 14px; padding: 10px; font-family: var(--font-body);
+  font-size: 1rem; font-weight: 700; transition: transform .1s, border-color .15s, background .15s;
+}
+.mat-pat:active { transform: scale(.96); }
+.mat-pat.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
 .weekdays, .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .weekdays { margin-bottom: 6px; }

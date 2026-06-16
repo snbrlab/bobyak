@@ -57,6 +57,9 @@
   const ak = (gid, name, date) => `${gid}|${name}|${date}`;
   const nk = (gid, name, date, meal) => `${gid}|${name}|${date}|${meal}`; // 사유(메모) 키
   const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // 돗자리(배경) 색 팔레트 + hex→rgba
+  const MAT_PALETTE = ["#f5c542", "#ff9ec0", "#6fd3b0", "#7fb8ff", "#ffb47a", "#b69cf0", "#ff8e8e", "#9fd86f"];
+  function hexRgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; }
 
   // =========================================================
   //  저장소 추상화
@@ -486,6 +489,43 @@
       pickerEl.classList.remove("hidden"); pickerBg.classList.remove("hidden");
     }
 
+    // ----- 돗자리(일간 배경) 꾸미기 -----
+    const MATKEY = `bobyak_mat_${gid}`;
+    let mat = { pattern: "check", color: "#f5c542" };
+    try { const m = JSON.parse(localStorage.getItem(MATKEY) || "null"); if (m && m.color) mat = m; } catch (_) {}
+    function applyMat(el) {
+      const base = hexRgba(mat.color, .13), pat = hexRgba(mat.color, .42);
+      el.style.backgroundColor = base;
+      if (mat.pattern === "dots") {
+        el.style.backgroundImage = `radial-gradient(${pat} 21%, transparent 22%), radial-gradient(${pat} 21%, transparent 22%)`;
+        el.style.backgroundSize = "22px 22px";
+        el.style.backgroundPosition = "0 0, 11px 11px";
+      } else {
+        el.style.backgroundImage = `repeating-linear-gradient(0deg, ${pat} 0 11px, transparent 11px 22px), repeating-linear-gradient(90deg, ${pat} 0 11px, transparent 11px 22px)`;
+        el.style.backgroundSize = "auto"; el.style.backgroundPosition = "0 0";
+      }
+    }
+    function clearMat(el) { ["background", "backgroundColor", "backgroundImage", "backgroundSize", "backgroundPosition"].forEach((p) => { el.style[p] = ""; }); }
+
+    const matPickerEl = $("matPicker"), matBg = $("matBackdrop");
+    function closeMatPicker() { matPickerEl.classList.add("hidden"); matBg.classList.add("hidden"); }
+    matBg.onclick = closeMatPicker;
+    function refreshMatPicker() {
+      document.querySelectorAll("#matPatterns .mat-pat").forEach((b) => b.classList.toggle("active", b.dataset.pat === mat.pattern));
+      const sw = $("matSwatches"); sw.innerHTML = "";
+      MAT_PALETTE.forEach((c) => {
+        const b = document.createElement("button");
+        b.className = "cp-sw" + (c.toLowerCase() === mat.color.toLowerCase() ? " sel" : "");
+        b.style.background = c;
+        b.onclick = () => { mat = { ...mat, color: c }; localStorage.setItem(MATKEY, JSON.stringify(mat)); renderDays(); refreshMatPicker(); };
+        sw.appendChild(b);
+      });
+    }
+    document.querySelectorAll("#matPatterns .mat-pat").forEach((b) => {
+      b.onclick = () => { mat = { ...mat, pattern: b.dataset.pat }; localStorage.setItem(MATKEY, JSON.stringify(mat)); renderDays(); refreshMatPicker(); };
+    });
+    $("matBtn").onclick = () => { refreshMatPicker(); matBg.classList.remove("hidden"); matPickerEl.classList.remove("hidden"); };
+
     function renderChips() {
       chipsEl.innerHTML = "";
       members.forEach((m, idx) => {
@@ -517,6 +557,8 @@
       daysEl.classList.toggle("dayview", viewMode === "day");
       document.querySelectorAll(".vt").forEach((b) => b.classList.toggle("active", b.dataset.mode === viewMode));
       $("todayBtn").textContent = viewMode === "day" ? "오늘로" : viewMode === "month" ? "이번 달로" : "이번 주로";
+      $("matBtn").classList.toggle("hidden", viewMode !== "day");
+      if (viewMode !== "day") clearMat(daysEl);
       daysEl.innerHTML = "";
       if (viewMode === "day") renderDay();
       else if (viewMode === "month") renderMonth();
@@ -614,6 +656,7 @@
             <div class="tc-cnt">${meal === "dinner" ? "저녁" : "점심"}</div>
           </div>${seats}
         </div>`;
+      applyMat(daysEl); // 돗자리 배경
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
