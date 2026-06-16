@@ -183,21 +183,16 @@ body {
 .day.today .num { color: var(--accent); }
 .day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
 
-/* 전원 출근! 축하 칸 🎉 */
+/* 전원 출근! 칸 색으로만 축하 (높이 변화 없음) */
 .day.allin {
-  background: linear-gradient(135deg, #fff1f6 0%, #fff8e6 48%, #eafcf2 100%);
-  border-color: #ffd1e0;
-  box-shadow: 0 0 0 2px #ffe6ef inset, 0 6px 16px rgba(255,143,171,.28);
+  background: linear-gradient(135deg, #ffe0ec 0%, #fff3cf 50%, #d9f7e6 100%);
+  border-color: #ffc2d6;
+  animation: allinGlow 1.8s ease-in-out infinite;
 }
-.allin-badge {
-  font-size: .58rem; font-weight: 700; color: #e8568a;
-  background: #fff; border-radius: 999px; padding: 1px 7px; margin: 3px 0 1px;
-  white-space: nowrap; box-shadow: 0 1px 4px rgba(232,86,138,.3);
-  transform-origin: center; animation: wiggle 1.3s ease-in-out infinite;
-}
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-4deg) scale(1); }
-  50% { transform: rotate(4deg) scale(1.08); }
+.day.allin .num { color: #e8568a; }
+@keyframes allinGlow {
+  0%, 100% { box-shadow: 0 0 0 2px #ffe6ef inset, 0 2px 8px rgba(255,143,171,.22); }
+  50% { box-shadow: 0 0 0 2px #ffd0e1 inset, 0 6px 18px rgba(255,143,171,.45); }
 }
 
 /* 날짜 칸 안의 부재 이름 라벨 — 한 층씩 세로로 쌓임 */

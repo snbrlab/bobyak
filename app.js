@@ -418,11 +418,9 @@
             ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
             : `<span class="ptag empty"></span>`;
         }).join("");
-        // 전원 출근하는 날 → 축하 표시 🎉
-        const allIn = members.length >= 2 && presentCount === members.length;
-        if (allIn) cell.classList.add("allin");
-        const badge = allIn ? `<div class="allin-badge">🎉 다모임!</div>` : "";
-        cell.innerHTML = `<span class="num">${dd}</span>${badge}<div class="tags">${tags}</div>`;
+        // 전원 출근하는 날 → 칸 색으로만 축하 (레이아웃 안 밀리게)
+        if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
+        cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
         cell.onclick = () => onDayClick(date);
         daysEl.appendChild(cell);
       }
