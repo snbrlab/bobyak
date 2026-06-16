@@ -459,7 +459,7 @@
         return `<button class="seat ${on ? "" : "absent"} ${isMe ? "me" : ""}" data-name="${m.name}"
           style="transform:translate(${x}px,${y}px)">
           <div class="bowl">${on ? "🍚" : "🥣"}</div>
-          <div class="snm" style="color:${m.color}">${m.name}</div></button>`;
+          <div class="snm" style="background:${m.color}">${m.name}</div></button>`;
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
       daysEl.innerHTML =

@@ -273,10 +273,14 @@ body {
 }
 .seat:active .bowl { transform: scale(.86); }
 .seat .bowl { font-size: 1.95rem; line-height: 1.05; transition: transform .1s; filter: drop-shadow(0 2px 2px rgba(140,100,70,.3)); }
-.seat .snm { font-size: .74rem; font-weight: 700; margin-top: -2px; }
+.seat .snm {
+  display: inline-block; font-size: .72rem; font-weight: 700; color: #4a3f3a;
+  border-radius: 999px; padding: 1px 9px; margin-top: 1px;
+  box-shadow: 0 1px 3px rgba(140,100,70,.22);
+}
 .seat.absent { opacity: .42; }
 .seat.absent .bowl { filter: none; }
-.seat.me .snm { text-decoration: underline; text-underline-offset: 2px; }
+.seat.me .snm { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent); }
 .seat.me::after {
   content: "나"; position: absolute; top: -4px; right: 6px;
   background: var(--accent); color: #fff; font-size: .55rem; font-weight: 700;
