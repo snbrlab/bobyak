@@ -270,9 +270,11 @@
     function snapWeekday(d) { let x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); while (x.getDay() === 0 || x.getDay() === 6) x = addDays(x, 1); return x; }
     let weekStart = startOfWeek(new Date()); // 보고 있는 주의 월요일
     let currentDay = snapWeekday(new Date()); // 일간 뷰에서 보고 있는 날
+    let monthY = t.y, monthM = t.m;           // 월간 뷰에서 보고 있는 달
 
     const VKEY = `bobyak_view_${gid}`;
-    let viewMode = localStorage.getItem(VKEY) === "day" ? "day" : "week";
+    const _v = localStorage.getItem(VKEY);
+    let viewMode = (_v === "day" || _v === "month") ? _v : "week";
 
     const MEKEY = `bobyak_me_${gid}`;
     let me = localStorage.getItem(MEKEY);
@@ -426,44 +428,64 @@
     function renderDays() {
       calEl.classList.toggle("locked", !me);
       document.querySelector(".weekdays").classList.toggle("hidden", viewMode === "day");
-      daysEl.classList.toggle("days", viewMode === "week");
+      daysEl.classList.toggle("days", viewMode !== "day");
       daysEl.classList.toggle("dayview", viewMode === "day");
       document.querySelectorAll(".vt").forEach((b) => b.classList.toggle("active", b.dataset.mode === viewMode));
-      $("todayBtn").textContent = viewMode === "day" ? "오늘로" : "이번 주로";
+      $("todayBtn").textContent = viewMode === "day" ? "오늘로" : viewMode === "month" ? "이번 달로" : "이번 주로";
       daysEl.innerHTML = "";
-      if (viewMode === "day") renderDay(); else renderWeek();
+      if (viewMode === "day") renderDay();
+      else if (viewMode === "month") renderMonth();
+      else renderWeek();
+    }
+
+    // 날짜 칸 하나 만들기 (주간/월간 공통)
+    function buildDayCell(yy, mm, dd) {
+      const date = ymd(yy, mm, dd);
+      const myColor = me ? memberByName[me].color : null;
+      const cell = document.createElement("div");
+      cell.className = "day";
+      if (yy === t.y && mm === t.m && dd === t.d) cell.classList.add("today");
+      const myStatus = me ? store.get(gid, me, date) : null;
+      if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
+      // 멤버 순서 고정: 전원을 같은 순서로, 안 나오는 날은 빈 슬롯으로 자리 유지
+      let presentCount = 0;
+      const tags = members.map((m) => {
+        const st = store.get(gid, m.name, date);
+        if (st) presentCount++;
+        return st
+          ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
+          : `<span class="ptag empty"></span>`;
+      }).join("");
+      if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
+      cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
+      cell.onclick = () => onDayClick(date);
+      return cell;
     }
 
     function renderWeek() {
-      const myColor = me ? memberByName[me].color : null;
       const s = weekStart, e = addDays(weekStart, 4);
       $("calTitle").textContent =
         `${s.getMonth() + 1}월 ${s.getDate()}일 – ${e.getMonth() + 1}월 ${e.getDate()}일`;
-
       for (let i = 0; i < 5; i++) {
         const day = addDays(weekStart, i);
-        const yy = day.getFullYear(), mm = day.getMonth(), dd = day.getDate();
-        const date = ymd(yy, mm, dd);
-        const cell = document.createElement("div");
-        cell.className = "day";
-        if (yy === t.y && mm === t.m && dd === t.d) cell.classList.add("today");
+        daysEl.appendChild(buildDayCell(day.getFullYear(), day.getMonth(), day.getDate()));
+      }
+    }
 
-        const myStatus = me ? store.get(gid, me, date) : null;
-        if (myStatus) { cell.classList.add("mine"); cell.style.setProperty("--myc", myColor); }
-        // 멤버 순서 고정: 전원을 같은 순서로, 안 나오는 날은 빈 슬롯으로 자리 유지
-        let presentCount = 0;
-        const tags = members.map((m) => {
-          const st = store.get(gid, m.name, date);
-          if (st) presentCount++;
-          return st
-            ? `<span class="ptag ${st}" style="--c:${m.color}">${m.name}</span>`
-            : `<span class="ptag empty"></span>`;
-        }).join("");
-        // 전원 참석하는 날 → 칸 색으로만 축하 (레이아웃 안 밀리게)
-        if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
-        cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
-        cell.onclick = () => onDayClick(date);
-        daysEl.appendChild(cell);
+    // 월간: 평일(월~금)만, 주별로 줄바꿈 (주간과 같은 칸 스타일)
+    function renderMonth() {
+      $("calTitle").textContent = `${monthY}년 ${monthM + 1}월`;
+      const lastDay = new Date(monthY, monthM + 1, 0).getDate();
+      const firstDow = (new Date(monthY, monthM, 1).getDay() + 6) % 7; // 0=월..6=일
+      for (let i = 0; i < Math.min(firstDow, 5); i++) {
+        const blank = document.createElement("div");
+        blank.className = "day empty";
+        daysEl.appendChild(blank);
+      }
+      for (let d = 1; d <= lastDay; d++) {
+        const dow = (new Date(monthY, monthM, d).getDay() + 6) % 7;
+        if (dow > 4) continue; // 토일 제외
+        daysEl.appendChild(buildDayCell(monthY, monthM, d));
       }
     }
 
@@ -531,15 +553,31 @@
       while (d.getDay() === 0 || d.getDay() === 6) d = addDays(d, delta > 0 ? 1 : -1);
       currentDay = d;
     }
+    function moveMonth(delta) {
+      monthM += delta;
+      if (monthM < 0) { monthM = 11; monthY--; }
+      if (monthM > 11) { monthM = 0; monthY++; }
+    }
 
     // 뷰 전환 토글
     document.querySelectorAll(".vt").forEach((b) => {
       b.onclick = () => { viewMode = b.dataset.mode; localStorage.setItem(VKEY, viewMode); renderDays(); };
     });
 
-    $("prevBtn").onclick = () => { viewMode === "day" ? moveDay(-1) : (weekStart = addDays(weekStart, -7)); renderDays(); };
-    $("nextBtn").onclick = () => { viewMode === "day" ? moveDay(1) : (weekStart = addDays(weekStart, 7)); renderDays(); };
-    $("todayBtn").onclick = () => { viewMode === "day" ? (currentDay = snapWeekday(new Date())) : (weekStart = startOfWeek(new Date())); renderDays(); };
+    $("prevBtn").onclick = () => {
+      if (viewMode === "day") moveDay(-1); else if (viewMode === "month") moveMonth(-1); else weekStart = addDays(weekStart, -7);
+      renderDays();
+    };
+    $("nextBtn").onclick = () => {
+      if (viewMode === "day") moveDay(1); else if (viewMode === "month") moveMonth(1); else weekStart = addDays(weekStart, 7);
+      renderDays();
+    };
+    $("todayBtn").onclick = () => {
+      if (viewMode === "day") currentDay = snapWeekday(new Date());
+      else if (viewMode === "month") { monthY = t.y; monthM = t.m; }
+      else weekStart = startOfWeek(new Date());
+      renderDays();
+    };
 
     renderChips();
     renderDays();

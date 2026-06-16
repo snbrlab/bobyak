@@ -143,6 +143,10 @@ body {
 .cp-sw:active { transform: scale(.88); }
 .cp-sw.sel { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--accent); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 멤버 고르기: 한 줄 유지 + 넘치면 가로 스크롤 (모바일 줄바꿈 방지) */
+.me-picker .chips { flex-wrap: nowrap; overflow-x: auto; gap: 7px; padding-bottom: 3px; scrollbar-width: none; }
+.me-picker .chips::-webkit-scrollbar { display: none; }
+.me-picker .chip { flex: 0 0 auto; }
 .chip {
   border: 2px solid var(--line); background: #fff; border-radius: 999px;
   padding: 5px 12px; font-family: var(--font-body); font-size: .85rem;
@@ -171,7 +175,7 @@ body {
 .view-toggle .vt {
   border: none; background: transparent; cursor: pointer;
   font-family: var(--font-body); font-weight: 700; font-size: .95rem; color: var(--ink-soft);
-  padding: 6px 20px; border-radius: 999px; transition: background .15s, color .15s;
+  padding: 6px 16px; border-radius: 999px; transition: background .15s, color .15s;
 }
 .view-toggle .vt.active { background: #fff; color: var(--accent); box-shadow: 0 2px 6px rgba(214,165,140,.25); }
 
