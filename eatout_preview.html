@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>외식 아이콘 미리보기 🍽️🍔</title>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=Dongle:wght@400;700&display=swap"
+      media="print" onload="this.media='all'" />
+<style>
+  :root{ --ink:#5a4a42; --soft:#a99a92; --line:#f0e3da;
+    --head:"Dongle",system-ui,sans-serif; --body:"Gowun Dodum",system-ui,sans-serif; }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--body);color:var(--ink);
+    background:radial-gradient(circle at 20% 0%,#fff0e8,#fff6f0 60%);padding:22px 14px 60px;}
+  .wrap{max-width:460px;margin:0 auto;}
+  h1{font-family:var(--head);font-weight:700;font-size:2.4rem;text-align:center;margin:4px 0 2px;}
+  .lead{text-align:center;color:var(--soft);margin:0 0 22px;}
+  .card{background:#fff;border-radius:22px;box-shadow:0 8px 24px rgba(214,165,140,.18);padding:18px 14px 22px;margin-bottom:20px;}
+  .card h2{font-family:var(--head);font-weight:700;font-size:1.7rem;margin:0 0 2px;text-align:center;}
+  .card .sub{text-align:center;color:var(--soft);font-size:.9rem;margin:0 0 16px;}
+  /* 노란 체크 돗자리 위 식탁 느낌 */
+  .mat{background:#fffdf2;
+    background-image:repeating-linear-gradient(0deg,rgba(247,205,80,.42) 0 11px,transparent 11px 22px),
+                     repeating-linear-gradient(90deg,rgba(247,205,80,.42) 0 11px,transparent 11px 22px);
+    border-radius:16px;padding:18px 8px;}
+  .seats{display:flex;justify-content:center;flex-wrap:wrap;gap:14px 10px;}
+  .seat{width:74px;text-align:center;}
+  .bowlwrap{position:relative;display:inline-block;}
+  .bowl{font-size:2.2rem;line-height:1;filter:drop-shadow(0 2px 2px rgba(140,100,70,.3));}
+  .seat.absent .bowl{filter:none;opacity:.4;}
+  .seat.absent .name{opacity:.45;}
+  /* 외식 배지: 밥그릇 앞(왼쪽 위) */
+  .eat{position:absolute;left:-12px;top:-10px;font-size:1.25rem;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));animation:pop .3s ease;}
+  @keyframes pop{0%{transform:scale(0) rotate(-20deg);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .name{display:inline-block;margin-top:2px;font-size:.78rem;font-weight:700;color:#4a3f3a;
+    border-radius:999px;padding:1px 9px;box-shadow:0 1px 3px rgba(140,100,70,.22);}
+  .count{text-align:center;margin-top:14px;font-family:var(--head);font-weight:700;font-size:1.4rem;}
+  .count b{color:#e0577f;}
+  .note{text-align:center;color:var(--soft);font-size:.85rem;margin-top:18px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🍽️🍔 외식 아이콘 미리보기</h1>
+  <p class="lead">밥그릇 앞에 '외식 콜' 아이콘.<br/>가은·다현이 외식, 휘영은 구내식당, 인히는 불참 예시.</p>
+  <div id="root"></div>
+  <p class="note">실제로는 자리를 탭하면 외식 ON/OFF 토글돼요.<br/>마음에 드는 버전 알려주면 앱에 적용할게요!</p>
+</div>
+
+<script>
+const members = [
+  { name:"가은", color:"#FF8FA3", on:true,  eat:true  },
+  { name:"휘영", color:"#6FD3C7", on:true,  eat:false },
+  { name:"다현", color:"#FFB570", on:true,  eat:true  },
+  { name:"인히", color:"#7FB8FF", on:false, eat:false },
+];
+function seatsHTML(icon){
+  return members.map(m=>`
+    <div class="seat ${m.on?'':'absent'}">
+      <div class="bowlwrap">
+        ${m.on && m.eat ? `<span class="eat">${icon}</span>` : ""}
+        <span class="bowl">${m.on?'🍚':'🥣'}</span>
+      </div>
+      <div class="name" style="background:${m.color}">${m.name}</div>
+    </div>`).join("");
+}
+function version(title, sub, icon){
+  const eatN = members.filter(m=>m.on&&m.eat).length;
+  return `<div class="card">
+    <h2>${title}</h2><div class="sub">${sub}</div>
+    <div class="mat"><div class="seats">${seatsHTML(icon)}</div>
+      <div class="count">${icon} 외식 <b>${eatN}명</b></div>
+    </div>
+  </div>`;
+}
+document.getElementById("root").innerHTML =
+  version("A. 포크 버전 🍽️", "접시+포크나이프", "🍽️") +
+  version("B. 버거 버전 🍔", "맛있는거 먹으러", "🍔");
+</script>
+</body>
+</html>
