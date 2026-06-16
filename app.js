@@ -10,6 +10,22 @@
   const palette = cfg.palette;
   const MAX_MEMBERS = 10; // 모임 최대 인원
 
+  // ---------- 테마 (큐트 / 다크) ----------
+  const THEME_KEY = "bobyak_theme";
+  function applyTheme(th) {
+    document.documentElement.dataset.theme = th;
+    const btn = document.getElementById("themeBtn");
+    if (btn) btn.textContent = th === "dark" ? "☀️" : "🌙";
+  }
+  let theme = localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "cute";
+  applyTheme(theme);
+  const _themeBtn = document.getElementById("themeBtn");
+  if (_themeBtn) _themeBtn.onclick = () => {
+    theme = theme === "dark" ? "cute" : "dark";
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
+  };
+
   // ---------- 날짜 유틸 (KST 로컬 기준, toISOString 금지!) ----------
   const pad = (n) => String(n).padStart(2, "0");
   function ymd(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
