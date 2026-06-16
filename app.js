@@ -60,6 +60,25 @@
   // 돗자리(배경) 색 팔레트 + hex→rgba
   const MAT_PALETTE = ["#f5c542", "#ff9ec0", "#6fd3b0", "#7fb8ff", "#ffb47a", "#b69cf0", "#ff8e8e", "#9fd86f"];
   function hexRgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; }
+  // 탁상시계 (집합시간을 바늘로)
+  function clockHTML(time, cnt, total, meal) {
+    const [h, mn] = time.split(":").map(Number);
+    const ma = (mn || 0) * 6, ha = ((h || 0) % 12) * 30 + (mn || 0) * 0.5;
+    return `<div class="clock-wrap">
+      <div class="deskclock">
+        <i class="bell l"></i><i class="bell r"></i>
+        <div class="dial">
+          <span class="tk t12"></span><span class="tk t3"></span><span class="tk t6"></span><span class="tk t9"></span>
+          <span class="h-hand" style="--a:${ha}deg"></span>
+          <span class="m-hand" style="--a:${ma}deg"></span>
+          <span class="pivot"></span>
+        </div>
+        <i class="foot l"></i><i class="foot r"></i>
+      </div>
+      <div class="clock-time">${time}</div>
+      <div class="tc-cnt">${cnt}/${total} · ${meal === "dinner" ? "저녁" : "점심"}</div>
+    </div>`;
+  }
 
   // =========================================================
   //  저장소 추상화
@@ -715,12 +734,13 @@
           </div></div>`;
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
+      const mu = getMeetup(date, meal);
+      const center = mu.time
+        ? clockHTML(mu.time, cnt, members.length, meal)
+        : `<div class="tc-num">${cnt}/${members.length}</div><div class="tc-cnt">${meal === "dinner" ? "저녁" : "점심"}</div>`;
       daysEl.innerHTML =
         `<div class="table-wrap">
-          <div class="table-center ${allin ? "allin" : ""}">
-            <div class="tc-num">${cnt}/${members.length}</div>
-            <div class="tc-cnt">${meal === "dinner" ? "저녁" : "점심"}</div>
-          </div>${seats}
+          <div class="table-center ${allin ? "allin" : ""}">${center}</div>${seats}
         </div>`;
       applyMat(daysEl); // 돗자리 배경
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
