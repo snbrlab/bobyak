@@ -28,6 +28,41 @@
     if (activeRender) activeRender(); // 점심↔저녁 전환 반영
   };
 
+  // ---------- 업데이트 소식 (릴리즈 노트) ----------
+  const RELEASES = [
+    {
+      v: "1.0", date: "2026-06-16", title: "첫 출시 🎉",
+      items: [
+        "모임 만들기 → 링크로 단톡방에 공유",
+        "🌞 점심 / 🌙 저녁 참석을 따로 체크 (테마 전환 = 식사 전환!)",
+        "📅 일간(둥근 식탁)·주간·월간 뷰",
+        "⏰ 집합시간 — 식탁 위 디지털 시계",
+        "✋ 외식 제안 (밥그릇 앞에 손 번쩍)",
+        "💬 자리마다 사유 말풍선",
+        "🧺 돗자리 꾸미기 (체크/땡땡이 + 색)",
+        "📋 단톡방 공유 한 줄 복사",
+        "🎨 큐트/다크 테마, 멤버 색 바꾸기",
+      ],
+    },
+  ];
+  function renderReleases() {
+    const body = document.getElementById("releaseBody");
+    if (!body) return;
+    body.innerHTML = RELEASES.map((r) =>
+      `<div class="release-ver">v${r.v} · ${r.title}</div>` +
+      `<div class="release-date">${r.date}</div>` +
+      `<ul>${r.items.map((it) => `<li>${it}</li>`).join("")}</ul>`
+    ).join("");
+  }
+  const _relBtn = document.getElementById("releaseBtn");
+  const _relBg = document.getElementById("releaseBackdrop");
+  const _relModal = document.getElementById("releaseModal");
+  function closeReleases() { _relBg.classList.add("hidden"); _relModal.classList.add("hidden"); }
+  if (_relBtn) _relBtn.onclick = () => { renderReleases(); _relBg.classList.remove("hidden"); _relModal.classList.remove("hidden"); };
+  if (_relBg) _relBg.onclick = closeReleases;
+  const _relClose = document.getElementById("releaseClose");
+  if (_relClose) _relClose.onclick = closeReleases;
+
   // 현재 식사: 큐트=점심(lunch), 다크=저녁(dinner)
   function currentMeal() { return document.documentElement.dataset.theme === "dark" ? "dinner" : "lunch"; }
   // 레거시 'full'은 점심·저녁 둘 다로 간주

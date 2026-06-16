@@ -95,6 +95,7 @@
     </section>
 
     <footer class="footer">
+      <button id="releaseBtn" class="release-btn">🆕 업데이트 소식</button>
       <span class="made-with">밥은 먹고 하자! 🥢</span>
     </footer>
   </div>
@@ -118,6 +119,14 @@
       <button class="mat-pat" data-pat="dots">⚪ 땡땡이</button>
     </div>
     <div class="cp-swatches" id="matSwatches"></div>
+  </div>
+
+  <!-- 업데이트 소식(릴리즈 노트) 팝업 -->
+  <div class="picker-backdrop hidden" id="releaseBackdrop"></div>
+  <div class="release-modal hidden" id="releaseModal">
+    <div class="cp-title">🆕 업데이트 소식</div>
+    <div class="release-body" id="releaseBody"></div>
+    <button class="release-close" id="releaseClose">닫기</button>
   </div>
 
   <!-- 집합시간 제안 팝업 -->
