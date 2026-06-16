@@ -341,9 +341,9 @@ body {
     repeating-linear-gradient(90deg, var(--check) 0 11px, transparent 11px 22px);
   box-shadow: inset 0 2px 8px rgba(0,0,0,.10);
 }
-.table-wrap { position: relative; width: 320px; height: 320px; max-width: 100%; }
+.table-wrap { position: relative; width: 344px; height: 344px; max-width: 100%; }
 .table-center {
-  position: absolute; left: 50%; top: 50%; width: 240px; height: 240px; margin: -120px;
+  position: absolute; left: 50%; top: 50%; width: 274px; height: 274px; margin: -137px;
   border-radius: 50%; border: 4px solid var(--table-border);
   background: radial-gradient(circle at 50% 35%, var(--table-1), var(--table-2));
   box-shadow: inset 0 8px 22px var(--table-ishadow), 0 10px 24px var(--table-dshadow);
@@ -379,11 +379,11 @@ body {
 /* 사유 말풍선 */
 .bubble {
   position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-  margin-bottom: 4px; max-width: 96px; min-width: 34px;
+  margin-bottom: 4px; width: max-content; max-width: 132px;
   background: var(--card); color: var(--ink); border: 1.5px solid var(--line);
-  border-radius: 12px; padding: 3px 8px; font-size: .62rem; font-weight: 700;
-  line-height: 1.25; word-break: break-word; cursor: pointer; z-index: 5;
-  box-shadow: 0 3px 8px rgba(0,0,0,.2);
+  border-radius: 12px; padding: 4px 9px; font-size: .64rem; font-weight: 700;
+  line-height: 1.3; white-space: normal; word-break: keep-all; text-align: center;
+  cursor: pointer; z-index: 5; box-shadow: 0 3px 8px rgba(0,0,0,.2);
 }
 .bubble::after {
   content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
