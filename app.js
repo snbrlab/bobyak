@@ -374,6 +374,33 @@
       }
     }
 
+    // 색 고르기 팝업
+    const pickerEl = $("colorPicker"), pickerBg = $("pickerBackdrop");
+    function closePicker() { pickerEl.classList.add("hidden"); pickerBg.classList.add("hidden"); }
+    pickerBg.onclick = closePicker;
+    function openColorPicker(m) {
+      $("cpTitle").textContent = `${m.name} 색 고르기`;
+      const sw = $("cpSwatches");
+      sw.innerHTML = "";
+      palette.forEach((c) => {
+        const b = document.createElement("button");
+        b.className = "cp-sw" + (c.toLowerCase() === (m.color || "").toLowerCase() ? " sel" : "");
+        b.style.background = c;
+        b.onclick = async () => {
+          const prev = m.color;
+          if (c === prev) { closePicker(); return; }
+          m.color = c;
+          try {
+            await store.setMembers(gid, members);
+            closePicker(); renderChips(); renderDays();
+            toast(`${m.name} 색 변경!`);
+          } catch (e) { console.error(e); m.color = prev; toast("색 변경 실패 😢"); }
+        };
+        sw.appendChild(b);
+      });
+      pickerEl.classList.remove("hidden"); pickerBg.classList.remove("hidden");
+    }
+
     function renderChips() {
       chipsEl.innerHTML = "";
       members.forEach((m, idx) => {
@@ -383,6 +410,7 @@
         if (editMode) {
           b.innerHTML = `<span class="dot" style="background:${m.color}"></span>` +
             `<span class="cname">${m.name}</span><span class="x" title="삭제">✕</span>`;
+          b.querySelector(".dot").onclick = () => openColorPicker(m);
           b.querySelector(".cname").onclick = () => renameMember(m);
           b.querySelector(".x").onclick = () => deleteMember(m, idx);
         } else {

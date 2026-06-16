@@ -124,6 +124,24 @@ body {
 .chip.editing { cursor: default; }
 .chip.editing .cname { cursor: text; text-decoration: underline dotted; }
 .chip.editing .x { cursor: pointer; }
+.chip.editing .dot { cursor: pointer; width: 15px; height: 15px; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--c); }
+
+/* 색 고르기 팝업 */
+.picker-backdrop { position: fixed; inset: 0; background: rgba(90,74,66,.35); z-index: 60; }
+.color-picker {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: #fff; border-radius: 22px; padding: 20px; z-index: 61;
+  box-shadow: 0 12px 34px rgba(214,165,140,.4); width: 280px; max-width: 86%;
+  animation: pop .2s ease;
+}
+.cp-title { font-family: var(--font-head); font-weight: 700; font-size: 1.5rem; text-align: center; margin-bottom: 14px; }
+.cp-swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; justify-items: center; }
+.cp-sw {
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15); transition: transform .1s;
+}
+.cp-sw:active { transform: scale(.88); }
+.cp-sw.sel { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--accent); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   border: 2px solid var(--line); background: #fff; border-radius: 999px;

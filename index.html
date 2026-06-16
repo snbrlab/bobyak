@@ -91,6 +91,13 @@
   <!-- 토스트 -->
   <div class="toast" id="toast"></div>
 
+  <!-- 색 고르기 팝업 -->
+  <div class="picker-backdrop hidden" id="pickerBackdrop"></div>
+  <div class="color-picker hidden" id="colorPicker">
+    <div class="cp-title" id="cpTitle">색 고르기</div>
+    <div class="cp-swatches" id="cpSwatches"></div>
+  </div>
+
   <!-- 로컬 스크립트만 동기 로딩. Supabase는 공유 모드일 때 app.js가 동적으로 불러옴 -->
   <script src="config.js"></script>
   <script src="app.js"></script>
