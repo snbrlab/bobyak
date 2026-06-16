@@ -464,6 +464,12 @@ body {
 }
 .table-foot .meet-like:active { transform: scale(.93); }
 .table-foot .meet-like.on { background: var(--accent); color: var(--on-accent); }
+.share-day {
+  border: none; cursor: pointer; font-family: var(--font-body); font-weight: 700;
+  border-radius: 999px; padding: 8px 16px; font-size: 1rem;
+  background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow); transition: transform .1s;
+}
+.share-day:active { transform: scale(.93); }
 .seat {
   position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
   text-align: center; z-index: 2; font-family: var(--font-body);

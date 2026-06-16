@@ -602,6 +602,35 @@
       meetBg.classList.remove("hidden"); meetPickerEl.classList.remove("hidden");
     }
 
+    // ----- 단톡방 공유 한 줄 복사 -----
+    async function copyText(text, okMsg) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); toast(okMsg); return; }
+        throw new Error("no clipboard");
+      } catch (_) {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); toast(okMsg); } catch { toast("복사 실패 — 직접 복사해줘요"); }
+        document.body.removeChild(ta);
+      }
+    }
+    function buildSummary(date, meal) {
+      const [y, mo, dd] = date.split("-").map(Number);
+      const wd = ["일", "월", "화", "수", "목", "금", "토"][new Date(y, mo - 1, dd).getDay()];
+      const present = members.filter((m) => attendsMeal(store.get(gid, m.name, date), meal));
+      const absent = members.filter((m) => !attendsMeal(store.get(gid, m.name, date), meal));
+      const mu = getMeetup(date, meal);
+      const link = `${location.origin}/?g=${gid}`;
+      const L = [];
+      L.push(`🍚 ${mo}월 ${dd}일(${wd}) ${meal === "dinner" ? "저녁" : "점심"}`);
+      L.push(`${mu.time ? `⏰ ${mu.time} 집합 · ` : ""}${present.length}/${members.length}명`);
+      if (present.length) L.push(`✅ ${present.map((m) => m.name).join(", ")}`);
+      if (absent.length) L.push(`❌ ${absent.map((m) => m.name).join(", ")}`);
+      L.push(`🔗 ${link}`);
+      return L.join("\n");
+    }
+
     function renderChips() {
       chipsEl.innerHTML = "";
       members.forEach((m, idx) => {
@@ -732,10 +761,15 @@
         `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
+        <div class="table-foot">
+          <span class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</span>
+          <button class="share-day" id="shareDay">📋 단톡방 공유</button>
+        </div>`;
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
       if (dc) dc.onclick = () => openMeetPicker(date, meal);
+      const sd = document.getElementById("shareDay");
+      if (sd) sd.onclick = () => copyText(buildSummary(date, meal), "복사 완료! 단톡방에 붙여넣기 📋");
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
