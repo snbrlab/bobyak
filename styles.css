@@ -183,16 +183,22 @@ body {
 .day.today .num { color: var(--accent); }
 .day.mine { background: color-mix(in srgb, var(--myc, var(--accent)) 14%, #fff); }
 
-/* 전원 출근! 칸 색으로만 축하 (높이 변화 없음) */
+/* 전원 출근! 이글이글 — 색이 흐르고 글로우가 두근두근 (높이 변화 없음) */
 .day.allin {
-  background: linear-gradient(135deg, #ffe0ec 0%, #fff3cf 50%, #d9f7e6 100%);
-  border-color: #ffc2d6;
-  animation: allinGlow 1.8s ease-in-out infinite;
+  background: linear-gradient(120deg, #ffd0e4, #ffe7b8, #cdf6e0, #c9e7ff, #ffd0e4);
+  background-size: 320% 320%;
+  border-color: #ffb3cf;
+  animation: allinFlow 3s ease infinite, allinGlow 1.3s ease-in-out infinite;
 }
 .day.allin .num { color: #e8568a; }
+@keyframes allinFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 @keyframes allinGlow {
-  0%, 100% { box-shadow: 0 0 0 2px #ffe6ef inset, 0 2px 8px rgba(255,143,171,.22); }
-  50% { box-shadow: 0 0 0 2px #ffd0e1 inset, 0 6px 18px rgba(255,143,171,.45); }
+  0%, 100% { box-shadow: 0 0 0 2px #ffd0e1 inset, 0 2px 10px rgba(255,120,160,.30); }
+  50% { box-shadow: 0 0 0 2px #ffaecb inset, 0 9px 24px rgba(255,120,160,.58); }
 }
 
 /* 날짜 칸 안의 부재 이름 라벨 — 한 층씩 세로로 쌓임 */
