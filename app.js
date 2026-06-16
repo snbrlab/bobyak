@@ -578,9 +578,7 @@
     function closeMeetPicker() { meetPickerEl.classList.add("hidden"); meetBg.classList.add("hidden"); }
     meetBg.onclick = closeMeetPicker;
     async function setMeetTime(date, meal, time) {
-      const mu = getMeetup(date, meal);
-      const obj = { time, likes: time ? (mu.time === time ? mu.likes : (me ? [me] : [])) : [] };
-      try { await saveMeetup(date, meal, obj); closeMeetPicker(); renderDays(); toast(time ? `집합 ${time} ✓` : "집합시간 지움"); }
+      try { await saveMeetup(date, meal, { time }); closeMeetPicker(); renderDays(); toast(time ? `집합 ${time} ✓` : "집합시간 지움"); }
       catch (e) { console.error(e); toast("저장 실패 😢 (공유모드면 notes 마이그레이션 필요)"); }
     }
     function openMeetPicker(date, meal) {
@@ -728,22 +726,14 @@
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
       const mu = getMeetup(date, meal);
-      const liked = me && mu.likes.includes(me);
-      const likeBtn = mu.time
-        ? `<button class="meet-like ${liked ? "on" : ""}" id="meetLike" title="${escapeHtml(mu.likes.join(", "))}">👍 ${mu.likes.length}</button>`
-        : "";
       daysEl.innerHTML =
         `<div class="table-wrap">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-foot">
-          <span class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</span>${likeBtn}
-        </div>`;
+        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
       if (dc) dc.onclick = () => openMeetPicker(date, meal);
-      const lk = document.getElementById("meetLike");
-      if (lk) lk.onclick = () => toggleMeetLike(date, meal);
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
