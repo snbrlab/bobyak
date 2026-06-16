@@ -60,12 +60,16 @@
   // 돗자리(배경) 색 팔레트 + hex→rgba
   const MAT_PALETTE = ["#f5c542", "#ff9ec0", "#6fd3b0", "#7fb8ff", "#ffb47a", "#b69cf0", "#ff8e8e", "#9fd86f"];
   function hexRgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; }
-  // 네모난 디지털 탁상시계 (집합시간 / 미정이면 --:--)
-  function clockHTML(time) {
+  // 네모난 디지털 탁상시계 (LCD 느낌) — 집합시간 / 미정이면 --:--
+  function clockHTML(time, meal) {
     const t = time || "--:--";
-    return `<div class="digiclock" id="digiClock" title="집합시간 정하기">
+    const ml = meal === "dinner" ? "저녁" : "점심";
+    return `<div class="digiclock ${time ? "" : "digi-empty"}" id="digiClock" title="집합시간 정하기">
       <i class="knob l"></i><i class="knob r"></i>
-      <div class="digi-screen ${time ? "" : "empty"}"><span>${t}</span></div>
+      <div class="lcd">
+        <span class="lcd-time">${t}</span>
+        <span class="lcd-side"><span class="lcd-meal">${ml}</span><span class="lcd-sub">약속</span></span>
+      </div>
       <i class="foot l"></i><i class="foot r"></i>
     </div>`;
   }
@@ -727,7 +731,7 @@
       const mu = getMeetup(date, meal);
       daysEl.innerHTML =
         `<div class="table-wrap">
-          <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time)}</div>${seats}
+          <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
         <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
       applyMat(daysEl); // 돗자리 배경

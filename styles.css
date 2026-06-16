@@ -43,6 +43,9 @@
   --table-dshadow: rgba(180, 150, 130, .22);
   --tc-num: var(--accent);
   --tc-cnt: #b0a097;
+  --clock-body: #ffffff;
+  --clock-edge: #e6e0d8;
+  --clock-knob: #d8d2c8;
 
   /* 폰트 — 바꾸려면 여기만. 제목 Dongle / 본문 Gowun Dodum */
   --font-head: "Dongle", system-ui, sans-serif;
@@ -87,6 +90,9 @@
   --table-dshadow: rgba(0, 0, 0, .4);
   --tc-num: #eaeaf0;
   --tc-cnt: #c8c8d0;
+  --clock-body: #2a2a30;
+  --clock-edge: #3a3a44;
+  --clock-knob: #44444e;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -404,40 +410,45 @@ body {
 .table-center .tc-num { font-family: var(--font-head); font-weight: 700; font-size: 2.4rem; color: var(--tc-num); line-height: 1; }
 .table-center .tc-cnt { font-size: .85rem; font-weight: 700; color: var(--tc-cnt); }
 
-/* 네모난 디지털 탁상시계 (작고 디테일) */
+/* LCD 디지털 탁상시계 (흰/검 바디 + 연한 LCD 화면) */
 .digiclock {
-  position: relative; cursor: pointer; padding: 6px;
-  background: var(--card); border: 2.5px solid var(--accent); border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
+  position: relative; cursor: pointer; padding: 7px 8px;
+  background: var(--clock-body); border: 1.5px solid var(--clock-edge); border-radius: 14px;
+  box-shadow: 0 5px 12px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.5);
   transition: transform .1s;
 }
 .digiclock:active { transform: scale(.95); }
 /* 윗면 버튼(노브) */
 .digiclock .knob {
-  position: absolute; top: -5px; width: 13px; height: 7px; border-radius: 5px 5px 2px 2px;
-  background: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,.2);
+  position: absolute; top: -4px; width: 14px; height: 6px; border-radius: 5px 5px 2px 2px;
+  background: var(--clock-knob); box-shadow: 0 1px 2px rgba(0,0,0,.18);
 }
-.digiclock .knob.l { left: 9px; } .digiclock .knob.r { right: 9px; }
+.digiclock .knob.l { left: 12px; } .digiclock .knob.r { right: 12px; }
 /* 받침다리 */
-.digiclock .foot { position: absolute; bottom: -4px; width: 10px; height: 7px; border-radius: 0 0 4px 4px; background: var(--accent); }
-.digiclock .foot.l { left: 10px; } .digiclock .foot.r { right: 10px; }
-/* LED 화면 */
-.digi-screen {
-  position: relative; overflow: hidden; border-radius: 7px; padding: 4px 11px;
-  background: linear-gradient(#262631, #1a1a21);
-  box-shadow: inset 0 0 8px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.05);
+.digiclock .foot { position: absolute; bottom: -4px; width: 11px; height: 6px; border-radius: 0 0 4px 4px; background: var(--clock-knob); }
+.digiclock .foot.l { left: 13px; } .digiclock .foot.r { right: 13px; }
+/* LCD 화면 */
+.lcd {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(#d2e4d8, #c1d7ca); border-radius: 8px; padding: 5px 11px;
+  box-shadow: inset 0 1px 5px rgba(40,60,50,.3), inset 0 0 0 1px rgba(0,0,0,.07);
 }
-.digi-screen span {
+.lcd-time {
   font-family: "Courier New", ui-monospace, monospace; font-weight: 700;
-  font-size: 1.5rem; letter-spacing: 2px; line-height: 1;
-  color: #74f0c4; text-shadow: 0 0 6px rgba(116,240,196,.7);
+  font-size: 1.7rem; letter-spacing: 1px; line-height: .95; color: #29322c;
 }
-.digi-screen.empty span { color: #55555f; text-shadow: none; }
+.digi-empty .lcd-time { color: #8b9c90; }
+.lcd-side {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  border-left: 1.5px solid rgba(40,60,50,.22); padding-left: 7px;
+}
+.lcd-meal { font-family: var(--font-head); font-weight: 700; font-size: .9rem; line-height: 1; color: #29322c; }
+.lcd-sub { font-size: .5rem; font-weight: 700; letter-spacing: .5px; color: #5a6b60; }
 /* 화면 유리 반사 */
-.digi-screen::after {
-  content: ""; position: absolute; top: 0; left: -25%; width: 45%; height: 100%;
-  background: linear-gradient(105deg, transparent, rgba(255,255,255,.10), transparent);
-  transform: skewX(-18deg);
+.lcd::after {
+  content: ""; position: absolute; top: 0; left: -25%; width: 40%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.22), transparent);
+  transform: skewX(-18deg); pointer-events: none;
 }
 
 /* 테이블 아래 참석 카운트 */
