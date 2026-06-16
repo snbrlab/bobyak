@@ -766,7 +766,7 @@
         `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}${eatCnt ? ` · 외식 제안 ${eatCnt}` : ""}</div>`;
+        <div class="table-count">참석 ${cnt}/${members.length} · 외식 제안 ${eatCnt}/${members.length}</div>`;
       curDate = date; curMeal = meal; // 공유 버튼이 참조
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
