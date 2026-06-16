@@ -498,7 +498,7 @@
       const isToday = (yy === t.y && mm === t.m && dd === t.d);
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
-      const n = members.length, R = 74;
+      const n = members.length, R = 88;
       let cnt = 0;
       const seats = members.map((m, i) => {
         const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
