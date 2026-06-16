@@ -630,6 +630,8 @@
       L.push(`🔗 ${link}`);
       return L.join("\n");
     }
+    let curDate = null, curMeal = null; // 현재 일간 뷰의 날짜·식사 (공유 버튼용)
+    $("shareDay").onclick = () => { if (curDate) copyText(buildSummary(curDate, curMeal), "복사 완료! 단톡방에 붙여넣기 📋"); };
 
     function renderChips() {
       chipsEl.innerHTML = "";
@@ -662,7 +664,7 @@
       daysEl.classList.toggle("dayview", viewMode === "day");
       document.querySelectorAll(".vt").forEach((b) => b.classList.toggle("active", b.dataset.mode === viewMode));
       $("todayBtn").textContent = viewMode === "day" ? "오늘로" : viewMode === "month" ? "이번 달로" : "이번 주로";
-      $("matBtn").classList.toggle("hidden", viewMode !== "day");
+      $("dayActions").classList.toggle("hidden", viewMode !== "day");
       if (viewMode !== "day") { clearMat(daysEl); $("meetBar").classList.add("hidden"); }
       daysEl.innerHTML = "";
       if (viewMode === "day") renderDay();
@@ -761,15 +763,11 @@
         `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-foot">
-          <span class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</span>
-          <button class="share-day" id="shareDay">📋 단톡방 공유</button>
-        </div>`;
+        <div class="table-count">${cnt}/${members.length} · ${meal === "dinner" ? "저녁" : "점심"}</div>`;
+      curDate = date; curMeal = meal; // 공유 버튼이 참조
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
       if (dc) dc.onclick = () => openMeetPicker(date, meal);
-      const sd = document.getElementById("shareDay");
-      if (sd) sd.onclick = () => copyText(buildSummary(date, meal), "복사 완료! 단톡방에 붙여넣기 📋");
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
