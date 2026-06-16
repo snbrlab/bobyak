@@ -380,7 +380,7 @@ body {
 /* ---------- 일간: 둥근 식탁 + 밥그릇 ---------- */
 /* 노란 깅엄 체크 식탁보 */
 .dayview {
-  display: flex; justify-content: center; align-items: center;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
   padding: 24px 8px; margin-top: 4px; border-radius: 20px;
   background-color: var(--cloth-bg);
   background-image:
@@ -404,28 +404,30 @@ body {
 .table-center .tc-num { font-family: var(--font-head); font-weight: 700; font-size: 2.4rem; color: var(--tc-num); line-height: 1; }
 .table-center .tc-cnt { font-size: .85rem; font-weight: 700; color: var(--tc-cnt); }
 
-/* 탁상시계 */
-.clock-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.deskclock { position: relative; }
-.deskclock .bell { position: absolute; top: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); z-index: 0; }
-.deskclock .bell.l { left: 4px; } .deskclock .bell.r { right: 4px; }
-.deskclock .foot { position: absolute; bottom: -3px; width: 9px; height: 9px; border-radius: 2px; background: var(--accent); }
-.deskclock .foot.l { left: 14px; transform: rotate(22deg); } .deskclock .foot.r { right: 14px; transform: rotate(-22deg); }
-.dial {
-  position: relative; width: 80px; height: 80px; border-radius: 50%; z-index: 1;
-  background: #fff; border: 4px solid var(--accent);
-  box-shadow: inset 0 2px 7px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.12);
+/* 네모난 디지털 탁상시계 */
+.digiclock {
+  position: relative; cursor: pointer; padding: 9px;
+  background: var(--card); border: 3px solid var(--accent); border-radius: 14px;
+  box-shadow: 0 5px 12px rgba(0,0,0,.22); transition: transform .1s;
 }
-.dial .tk { position: absolute; background: var(--ink-soft); border-radius: 2px; }
-.dial .tk.t12 { top: 5px; left: 50%; margin-left: -1.5px; width: 3px; height: 7px; }
-.dial .tk.t6 { bottom: 5px; left: 50%; margin-left: -1.5px; width: 3px; height: 7px; }
-.dial .tk.t3 { right: 5px; top: 50%; margin-top: -1.5px; width: 7px; height: 3px; }
-.dial .tk.t9 { left: 5px; top: 50%; margin-top: -1.5px; width: 7px; height: 3px; }
-.h-hand, .m-hand { position: absolute; left: 50%; bottom: 50%; transform-origin: bottom center; border-radius: 3px; }
-.h-hand { width: 4px; height: 20px; background: var(--ink); transform: translateX(-50%) rotate(var(--a)); }
-.m-hand { width: 3px; height: 28px; background: var(--accent); transform: translateX(-50%) rotate(var(--a)); }
-.pivot { position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--ink); z-index: 2; }
-.clock-time { font-family: var(--font-head); font-weight: 700; font-size: 1.6rem; color: var(--ink); line-height: 1; }
+.digiclock:active { transform: scale(.95); }
+.digi-screen {
+  font-family: "Courier New", ui-monospace, monospace; font-weight: 700;
+  font-size: 1.85rem; letter-spacing: 2px; line-height: 1;
+  background: #20202a; color: #74f0c4; padding: 6px 13px; border-radius: 8px;
+  box-shadow: inset 0 0 9px rgba(0,0,0,.55);
+  text-shadow: 0 0 7px rgba(116,240,196,.65);
+}
+.digi-screen.empty { color: #555562; text-shadow: none; }
+.digiclock .foot { position: absolute; bottom: -4px; width: 11px; height: 8px; border-radius: 0 0 3px 3px; background: var(--accent); }
+.digiclock .foot.l { left: 12px; } .digiclock .foot.r { right: 12px; }
+
+/* 테이블 아래 참석 카운트 */
+.table-count {
+  margin-top: 14px; font-family: var(--font-head); font-weight: 700; font-size: 1.7rem;
+  color: var(--ink); background: var(--card); padding: 3px 18px; border-radius: 999px;
+  box-shadow: var(--shadow);
+}
 .seat {
   position: absolute; left: 50%; top: 50%; width: 60px; margin-left: -30px; margin-top: -30px;
   text-align: center; z-index: 2; font-family: var(--font-body);
