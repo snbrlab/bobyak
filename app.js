@@ -526,6 +526,71 @@
     });
     $("matBtn").onclick = () => { refreshMatPicker(); matBg.classList.remove("hidden"); matPickerEl.classList.remove("hidden"); };
 
+    // ----- 집합시간 제안 (날짜·식사별 단일 시간 + 👍) -----
+    const MEET = "##meet##"; // notes 테이블 재활용용 특수 키
+    const PRESETS = { lunch: ["11:30", "12:00", "12:30", "13:00"], dinner: ["18:00", "18:30", "19:00", "19:30"] };
+    function getMeetup(date, meal) {
+      try { const t = store.getNote(gid, MEET, date, meal); const o = t ? JSON.parse(t) : null; return (o && typeof o === "object") ? { time: o.time || "", likes: o.likes || [] } : { time: "", likes: [] }; }
+      catch (_) { return { time: "", likes: [] }; }
+    }
+    async function saveMeetup(date, meal, obj) {
+      const empty = !obj.time && (!obj.likes || obj.likes.length === 0);
+      await store.setNote(gid, MEET, date, meal, empty ? "" : JSON.stringify(obj));
+    }
+    function renderMeetBar(date, meal) {
+      const bar = $("meetBar");
+      bar.classList.remove("hidden");
+      const mu = getMeetup(date, meal);
+      if (mu.time) {
+        const liked = me && mu.likes.includes(me);
+        bar.innerHTML =
+          `<span class="meet-time">📍 집합 <b>${mu.time}</b></span>` +
+          `<button class="meet-like ${liked ? "on" : ""}" id="meetLike" title="${escapeHtml(mu.likes.join(", "))}">👍 ${mu.likes.length}</button>` +
+          `<button class="meet-edit" id="meetEdit">변경</button>`;
+        $("meetLike").onclick = () => toggleMeetLike(date, meal);
+      } else {
+        bar.innerHTML = `<button class="meet-propose" id="meetEdit">📍 집합시간 제안하기</button>`;
+      }
+      $("meetEdit").onclick = () => openMeetPicker(date, meal);
+    }
+    async function toggleMeetLike(date, meal) {
+      if (!me) { toast("먼저 위에서 이름을 골라줘요!"); return; }
+      const mu = getMeetup(date, meal);
+      const i = mu.likes.indexOf(me);
+      if (i >= 0) mu.likes.splice(i, 1); else mu.likes.push(me);
+      try { await saveMeetup(date, meal, mu); renderDays(); }
+      catch (e) { console.error(e); toast("저장 실패 😢"); }
+    }
+    const meetPickerEl = $("meetPicker"), meetBg = $("meetBackdrop");
+    function closeMeetPicker() { meetPickerEl.classList.add("hidden"); meetBg.classList.add("hidden"); }
+    meetBg.onclick = closeMeetPicker;
+    async function setMeetTime(date, meal, time) {
+      const mu = getMeetup(date, meal);
+      const obj = { time, likes: time ? (mu.time === time ? mu.likes : (me ? [me] : [])) : [] };
+      try { await saveMeetup(date, meal, obj); closeMeetPicker(); renderDays(); toast(time ? `집합 ${time} ✓` : "집합시간 지움"); }
+      catch (e) { console.error(e); toast("저장 실패 😢 (공유모드면 notes 마이그레이션 필요)"); }
+    }
+    function openMeetPicker(date, meal) {
+      const mu = getMeetup(date, meal);
+      $("meetTitle").textContent = `📍 ${meal === "dinner" ? "저녁" : "점심"} 집합시간`;
+      const pe = $("meetPresets"); pe.innerHTML = "";
+      PRESETS[meal].forEach((tm) => {
+        const b = document.createElement("button");
+        b.className = "preset" + (mu.time === tm ? " sel" : "");
+        b.textContent = tm;
+        b.onclick = () => setMeetTime(date, meal, tm);
+        pe.appendChild(b);
+      });
+      $("meetCustom").onclick = () => {
+        const v = (prompt("집합시간 (예: 12:40)", mu.time) || "").trim();
+        if (!v) return;
+        if (!/^\d{1,2}:\d{2}$/.test(v)) { toast("HH:MM 형식으로 입력해줘요"); return; }
+        setMeetTime(date, meal, v);
+      };
+      $("meetClear").onclick = () => setMeetTime(date, meal, "");
+      meetBg.classList.remove("hidden"); meetPickerEl.classList.remove("hidden");
+    }
+
     function renderChips() {
       chipsEl.innerHTML = "";
       members.forEach((m, idx) => {
@@ -558,7 +623,7 @@
       document.querySelectorAll(".vt").forEach((b) => b.classList.toggle("active", b.dataset.mode === viewMode));
       $("todayBtn").textContent = viewMode === "day" ? "오늘로" : viewMode === "month" ? "이번 달로" : "이번 주로";
       $("matBtn").classList.toggle("hidden", viewMode !== "day");
-      if (viewMode !== "day") clearMat(daysEl);
+      if (viewMode !== "day") { clearMat(daysEl); $("meetBar").classList.add("hidden"); }
       daysEl.innerHTML = "";
       if (viewMode === "day") renderDay();
       else if (viewMode === "month") renderMonth();
@@ -628,6 +693,7 @@
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
       const meal = currentMeal();
+      renderMeetBar(date, meal);
       const n = members.length, R = 102;
       let cnt = 0;
       const seats = members.map((m, i) => {

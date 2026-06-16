@@ -77,6 +77,7 @@
         </div>
         <button class="today-btn" id="todayBtn">이번 주로</button>
         <button class="mat-btn hidden" id="matBtn">🧺 돗자리 꾸미기</button>
+        <div class="meet-bar hidden" id="meetBar"></div>
         <div class="weekdays">
           <span>월</span><span>화</span><span>수</span><span>목</span><span>금</span>
         </div>
@@ -111,6 +112,15 @@
       <button class="mat-pat" data-pat="dots">⚪ 땡땡이</button>
     </div>
     <div class="cp-swatches" id="matSwatches"></div>
+  </div>
+
+  <!-- 집합시간 제안 팝업 -->
+  <div class="picker-backdrop hidden" id="meetBackdrop"></div>
+  <div class="color-picker hidden" id="meetPicker">
+    <div class="cp-title" id="meetTitle">📍 집합시간</div>
+    <div class="meet-presets" id="meetPresets"></div>
+    <button class="meet-custom" id="meetCustom">⌨️ 직접 입력</button>
+    <button class="meet-clear" id="meetClear">시간 지우기</button>
   </div>
 
   <!-- 로컬 스크립트만 동기 로딩. Supabase는 공유 모드일 때 app.js가 동적으로 불러옴 -->

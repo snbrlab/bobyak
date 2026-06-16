@@ -276,6 +276,37 @@ body {
 .mat-pat:active { transform: scale(.96); }
 .mat-pat.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
+/* 집합시간 바 */
+.meet-bar {
+  display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.meet-time { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; color: var(--ink); }
+.meet-time b { color: var(--accent); }
+.meet-bar button {
+  border: none; cursor: pointer; font-family: var(--font-body); font-weight: 700;
+  border-radius: 999px; padding: 6px 14px; font-size: .9rem; transition: transform .1s, background .15s;
+}
+.meet-bar button:active { transform: scale(.93); }
+.meet-propose { background: var(--accent); color: var(--on-accent); font-size: 1rem !important; padding: 9px 18px !important; }
+.meet-like { background: var(--btn-bg); color: var(--ink); }
+.meet-like.on { background: var(--accent); color: var(--on-accent); }
+.meet-edit { background: var(--btn-bg); color: var(--ink-soft); }
+.meet-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.meet-presets .preset {
+  border: 2px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer;
+  border-radius: 12px; padding: 10px 4px; font-family: var(--font-body); font-weight: 700; font-size: .95rem;
+  transition: transform .1s, border-color .15s;
+}
+.meet-presets .preset:active { transform: scale(.94); }
+.meet-presets .preset.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.meet-custom, .meet-clear {
+  display: block; width: 100%; margin-top: 8px; border: none; cursor: pointer;
+  border-radius: 12px; padding: 11px; font-family: var(--font-body); font-weight: 700; font-size: .95rem;
+}
+.meet-custom { background: var(--btn-bg); color: var(--ink); }
+.meet-clear { background: transparent; color: var(--sun); }
+
 .weekdays, .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .weekdays { margin-bottom: 6px; }
 .weekdays span { text-align: center; font-weight: 700; font-size: .95rem; color: var(--ink-soft); }
