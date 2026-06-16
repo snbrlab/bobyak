@@ -39,6 +39,10 @@
   .count{text-align:center;margin-top:14px;font-family:var(--head);font-weight:700;font-size:1.4rem;}
   .count b{color:#e0577f;}
   .note{text-align:center;color:var(--soft);font-size:.85rem;margin-top:18px;line-height:1.5;}
+  /* 아이콘 갤러리 */
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px;}
+  .gitem{text-align:center;}
+  .gitem .label{display:block;margin-top:3px;font-size:.72rem;color:var(--soft);font-weight:700;}
 </style>
 </head>
 <body>
@@ -75,9 +79,23 @@ function version(title, sub, icon){
     </div>
   </div>`;
 }
+const CANDS = [
+  ["🏃","달리기"],["🏃‍♀️","달리기F"],["🍔","버거"],["🍕","피자"],
+  ["🍜","라멘"],["🍗","치킨"],["🍟","감튀"],["🌮","타코"],
+  ["🍱","도시락"],["🚗","차타고"],["🍴","포크"],["🍽️","접시"],
+];
+function galleryHTML(){
+  return `<div class="card"><h2>아이콘 후보 갤러리</h2><div class="sub">밥그릇에 붙인 모습 — 마음에 드는 거 골라요</div>
+    <div class="gallery">${CANDS.map(([ic,lb])=>`
+      <div class="gitem">
+        <div class="bowlwrap"><span class="eat">${ic}</span><span class="bowl">🍚</span></div>
+        <span class="label">${ic} ${lb}</span>
+      </div>`).join("")}</div></div>`;
+}
 document.getElementById("root").innerHTML =
-  version("A. 포크 버전 🍽️", "접시+포크나이프", "🍽️") +
-  version("B. 버거 버전 🍔", "맛있는거 먹으러", "🍔");
+  galleryHTML() +
+  version("🏃 달리기 버전", "외식하러 달려가자!", "🏃") +
+  version("🍔 버거 버전", "맛있는거 먹으러", "🍔");
 </script>
 </body>
 </html>
