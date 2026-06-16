@@ -64,7 +64,8 @@
   function clockHTML(time) {
     const t = time || "--:--";
     return `<div class="digiclock" id="digiClock" title="집합시간 정하기">
-      <div class="digi-screen ${time ? "" : "empty"}">${t}</div>
+      <i class="knob l"></i><i class="knob r"></i>
+      <div class="digi-screen ${time ? "" : "empty"}"><span>${t}</span></div>
       <i class="foot l"></i><i class="foot r"></i>
     </div>`;
   }
@@ -536,7 +537,7 @@
 
     // ----- 집합시간 제안 (날짜·식사별 단일 시간 + 👍) -----
     const MEET = "##meet##"; // notes 테이블 재활용용 특수 키
-    const PRESETS = { lunch: ["11:30", "12:00", "12:30", "13:00"], dinner: ["18:00", "18:30", "19:00", "19:30"] };
+    const PRESETS = { lunch: ["11:30", "11:40", "11:50", "12:00"], dinner: ["18:00", "18:30", "19:00", "19:30"] };
     function getMeetup(date, meal) {
       try { const t = store.getNote(gid, MEET, date, meal); const o = t ? JSON.parse(t) : null; return (o && typeof o === "object") ? { time: o.time || "", likes: o.likes || [] } : { time: "", likes: [] }; }
       catch (_) { return { time: "", likes: [] }; }

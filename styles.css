@@ -404,23 +404,41 @@ body {
 .table-center .tc-num { font-family: var(--font-head); font-weight: 700; font-size: 2.4rem; color: var(--tc-num); line-height: 1; }
 .table-center .tc-cnt { font-size: .85rem; font-weight: 700; color: var(--tc-cnt); }
 
-/* 네모난 디지털 탁상시계 */
+/* 네모난 디지털 탁상시계 (작고 디테일) */
 .digiclock {
-  position: relative; cursor: pointer; padding: 9px;
-  background: var(--card); border: 3px solid var(--accent); border-radius: 14px;
-  box-shadow: 0 5px 12px rgba(0,0,0,.22); transition: transform .1s;
+  position: relative; cursor: pointer; padding: 6px;
+  background: var(--card); border: 2.5px solid var(--accent); border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
+  transition: transform .1s;
 }
 .digiclock:active { transform: scale(.95); }
-.digi-screen {
-  font-family: "Courier New", ui-monospace, monospace; font-weight: 700;
-  font-size: 1.85rem; letter-spacing: 2px; line-height: 1;
-  background: #20202a; color: #74f0c4; padding: 6px 13px; border-radius: 8px;
-  box-shadow: inset 0 0 9px rgba(0,0,0,.55);
-  text-shadow: 0 0 7px rgba(116,240,196,.65);
+/* 윗면 버튼(노브) */
+.digiclock .knob {
+  position: absolute; top: -5px; width: 13px; height: 7px; border-radius: 5px 5px 2px 2px;
+  background: var(--accent); box-shadow: 0 1px 2px rgba(0,0,0,.2);
 }
-.digi-screen.empty { color: #555562; text-shadow: none; }
-.digiclock .foot { position: absolute; bottom: -4px; width: 11px; height: 8px; border-radius: 0 0 3px 3px; background: var(--accent); }
-.digiclock .foot.l { left: 12px; } .digiclock .foot.r { right: 12px; }
+.digiclock .knob.l { left: 9px; } .digiclock .knob.r { right: 9px; }
+/* 받침다리 */
+.digiclock .foot { position: absolute; bottom: -4px; width: 10px; height: 7px; border-radius: 0 0 4px 4px; background: var(--accent); }
+.digiclock .foot.l { left: 10px; } .digiclock .foot.r { right: 10px; }
+/* LED 화면 */
+.digi-screen {
+  position: relative; overflow: hidden; border-radius: 7px; padding: 4px 11px;
+  background: linear-gradient(#262631, #1a1a21);
+  box-shadow: inset 0 0 8px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.digi-screen span {
+  font-family: "Courier New", ui-monospace, monospace; font-weight: 700;
+  font-size: 1.5rem; letter-spacing: 2px; line-height: 1;
+  color: #74f0c4; text-shadow: 0 0 6px rgba(116,240,196,.7);
+}
+.digi-screen.empty span { color: #55555f; text-shadow: none; }
+/* 화면 유리 반사 */
+.digi-screen::after {
+  content: ""; position: absolute; top: 0; left: -25%; width: 45%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.10), transparent);
+  transform: skewX(-18deg);
+}
 
 /* 테이블 아래 참석 카운트 */
 .table-count {
