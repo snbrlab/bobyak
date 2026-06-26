@@ -213,6 +213,11 @@ body {
 }
 .cp-sw:active { transform: scale(.88); }
 .cp-sw.sel { box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--accent); }
+/* 객원 부르기 팝업 */
+.guest-modal { width: 300px; }
+.guest-modal .guest-hint { text-align: center; color: var(--ink-soft); font-size: .92rem; margin: 0 0 12px; }
+.guest-modal .text-input { text-align: center; }
+.guest-modal .primary-btn { font-size: 1.4rem; margin-top: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 /* 멤버 고르기: 여러 줄로 다 보이게 (잘림 방지) */
 .me-picker .chips { flex-wrap: wrap; gap: 7px; }

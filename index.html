@@ -130,6 +130,15 @@
     <button class="release-close" id="releaseClose">닫기</button>
   </div>
 
+  <!-- 객원 부르기 팝업 -->
+  <div class="picker-backdrop hidden" id="guestBackdrop"></div>
+  <div class="color-picker guest-modal hidden" id="guestModal">
+    <div class="cp-title">🙋 같이 먹을 사람</div>
+    <p class="guest-hint">오늘만 끼는 객원! 이름 적어줘</p>
+    <input id="guestInput" class="text-input" maxlength="10" placeholder="예: 옆팀 지우" />
+    <button class="primary-btn" id="guestAddBtn">같이 먹어요! 🍚</button>
+  </div>
+
   <!-- 집합시간 제안 팝업 -->
   <div class="picker-backdrop hidden" id="meetBackdrop"></div>
   <div class="color-picker hidden" id="meetPicker">

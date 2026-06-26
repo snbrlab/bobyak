@@ -669,7 +669,7 @@
     }
     let curDate = null, curMeal = null; // 현재 일간 뷰의 날짜·식사 (공유/객원 버튼용)
     $("shareDay").onclick = () => { if (curDate) copyText(buildSummary(curDate, curMeal), "복사 완료! 단톡방에 붙여넣기 📋"); };
-    $("guestBtn").onclick = () => { if (curDate) addGuestPrompt(curDate, curMeal); };
+    $("guestBtn").onclick = () => openGuestModal();
 
     function renderChips() {
       chipsEl.innerHTML = "";
@@ -854,19 +854,32 @@
     // 객원(가끔 오는 멤버) — 그 날·식사에만, notes 재활용 (member="##guest##", JSON 배열)
     function getGuests(date, meal) { try { return JSON.parse(store.getNote(gid, "##guest##", date, meal) || "[]"); } catch (_) { return []; } }
     async function setGuests(date, meal, arr) { await store.setNote(gid, "##guest##", date, meal, arr.length ? JSON.stringify(arr) : ""); }
-    async function addGuestPrompt(date, meal) {
-      const name = (prompt("객원(가끔 오는 멤버) 이름은?") || "").trim();
-      if (!name) return;
-      const g = getGuests(date, meal);
-      if (g.includes(name) || members.some((m) => m.name === name)) { toast("이미 있는 이름이에요"); return; }
-      g.push(name);
-      try { await setGuests(date, meal, g); renderDays(); toast(`${name} 객원 추가 🙋`); }
-      catch (e) { console.error(e); toast("추가 실패 😢"); }
+    // 예쁜 객원 추가 팝업
+    const guestModalEl = $("guestModal"), guestBg = $("guestBackdrop"), guestInput = $("guestInput");
+    function openGuestModal() {
+      if (!curDate) return;
+      guestInput.value = "";
+      guestBg.classList.remove("hidden"); guestModalEl.classList.remove("hidden");
+      setTimeout(() => guestInput.focus(), 60);
     }
+    function closeGuestModal() { guestBg.classList.add("hidden"); guestModalEl.classList.add("hidden"); }
+    async function doAddGuest() {
+      const name = guestInput.value.trim();
+      if (!name || !curDate) return;
+      const g = getGuests(curDate, curMeal);
+      if (g.includes(name) || members.some((m) => m.name === name)) { toast("앗, 이미 있는 이름이야!"); return; }
+      g.push(name);
+      try { await setGuests(curDate, curMeal, g); closeGuestModal(); renderDays(); toast(`${name} 합류! 같이 먹자 🙋`); }
+      catch (e) { console.error(e); toast("앗, 추가 실패 😢"); }
+    }
+    guestBg.onclick = closeGuestModal;
+    $("guestAddBtn").onclick = doAddGuest;
+    guestInput.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); doAddGuest(); } };
+
+    // 객원 칩 누르면 바로 빠짐 (확인창 X)
     async function removeGuest(date, meal, name) {
-      if (!confirm(`객원 '${name}' 뺄까요?`)) return;
-      try { await setGuests(date, meal, getGuests(date, meal).filter((x) => x !== name)); renderDays(); toast(`${name} 객원 제거`); }
-      catch (e) { console.error(e); toast("제거 실패 😢"); }
+      try { await setGuests(date, meal, getGuests(date, meal).filter((x) => x !== name)); renderDays(); toast(`${name} 다음에 또 봐~ 👋`); }
+      catch (e) { console.error(e); toast("앗, 실패 😢"); }
     }
 
     // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 순환(불참→참석→외식→불참)
