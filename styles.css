@@ -472,6 +472,21 @@ body {
   transform: skewX(-18deg); pointer-events: none;
 }
 
+/* 객원: 식탁 밖(돗자리 위)에서 손 흔드는 손님들 */
+.guest-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; margin-top: 10px; }
+.guest {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  border: none; background: transparent; cursor: pointer; font-family: var(--font-body);
+  transition: transform .1s;
+}
+.guest:active { transform: scale(.92); }
+.guest .guest-hand { font-size: 1.55rem; line-height: 1; animation: wave 1.4s ease-in-out infinite; transform-origin: 70% 90%; }
+.guest .guest-name {
+  font-size: .72rem; font-weight: 700; color: var(--ink);
+  background: var(--card); border-radius: 999px; padding: 1px 9px; box-shadow: var(--shadow);
+}
+@keyframes wave { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(10deg); } }
+
 /* 테이블 아래: 참석 카운트 + 👍 */
 .table-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
 .table-count {

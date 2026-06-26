@@ -662,11 +662,14 @@
       L.push(`${mu.time ? `${mu.time} 집합 · ` : ""}${present.length}/${members.length}`);
       if (present.length) L.push(`참석: ${present.map((m) => m.name).join(", ")}`);
       if (absent.length) L.push(`불참: ${absent.map((m) => m.name).join(", ")}`);
+      const guests = getGuests(date, meal);
+      if (guests.length) L.push(`객원: ${guests.join(", ")}`);
       L.push(link);
       return L.join("\n");
     }
-    let curDate = null, curMeal = null; // 현재 일간 뷰의 날짜·식사 (공유 버튼용)
+    let curDate = null, curMeal = null; // 현재 일간 뷰의 날짜·식사 (공유/객원 버튼용)
     $("shareDay").onclick = () => { if (curDate) copyText(buildSummary(curDate, curMeal), "복사 완료! 단톡방에 붙여넣기 📋"); };
+    $("guestBtn").onclick = () => { if (curDate) addGuestPrompt(curDate, curMeal); };
 
     function renderChips() {
       chipsEl.innerHTML = "";
@@ -797,15 +800,23 @@
       }).join("");
       const allin = members.length >= 2 && cnt === members.length;
       const mu = getMeetup(date, meal);
+      const guests = getGuests(date, meal);
+      const guestRow = guests.length
+        ? `<div class="guest-row">${guests.map((g) =>
+            `<button class="guest" data-guest="${escapeHtml(g)}" title="탭하면 제거">` +
+            `<span class="guest-hand">🙋</span><span class="guest-name">${escapeHtml(g)}</span></button>`).join("")}</div>`
+        : "";
       daysEl.innerHTML =
         `<div class="table-wrap ${dense ? "dense" : ""}">
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
-        <div class="table-count">참석 ${cnt}/${members.length} · 외식 제안 ${eatCnt}/${members.length}</div>`;
-      curDate = date; curMeal = meal; // 공유 버튼이 참조
+        ${guestRow}
+        <div class="table-count">참석 ${cnt}/${members.length}${guests.length ? ` · 객원 ${guests.length}` : ""} · 외식 제안 ${eatCnt}/${members.length}</div>`;
+      curDate = date; curMeal = meal; // 공유/객원 버튼이 참조
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
       if (dc) dc.onclick = () => openMeetPicker(date, meal);
+      daysEl.querySelectorAll(".guest").forEach((el) => { el.onclick = () => removeGuest(date, meal, el.dataset.guest); });
       daysEl.querySelectorAll(".seat-main").forEach((el) => {
         el.onclick = () => onSeatClick(el.dataset.name, date);
       });
@@ -839,6 +850,24 @@
     // 외식(✋) 플래그 — notes 테이블 재활용 (meal+"#eat")
     function isEat(name, date, meal) { return store.getNote(gid, name, date, meal + "#eat") === "1"; }
     async function setEat(name, date, meal, on) { await store.setNote(gid, name, date, meal + "#eat", on ? "1" : ""); }
+
+    // 객원(가끔 오는 멤버) — 그 날·식사에만, notes 재활용 (member="##guest##", JSON 배열)
+    function getGuests(date, meal) { try { return JSON.parse(store.getNote(gid, "##guest##", date, meal) || "[]"); } catch (_) { return []; } }
+    async function setGuests(date, meal, arr) { await store.setNote(gid, "##guest##", date, meal, arr.length ? JSON.stringify(arr) : ""); }
+    async function addGuestPrompt(date, meal) {
+      const name = (prompt("객원(가끔 오는 멤버) 이름은?") || "").trim();
+      if (!name) return;
+      const g = getGuests(date, meal);
+      if (g.includes(name) || members.some((m) => m.name === name)) { toast("이미 있는 이름이에요"); return; }
+      g.push(name);
+      try { await setGuests(date, meal, g); renderDays(); toast(`${name} 객원 추가 🙋`); }
+      catch (e) { console.error(e); toast("추가 실패 😢"); }
+    }
+    async function removeGuest(date, meal, name) {
+      if (!confirm(`객원 '${name}' 뺄까요?`)) return;
+      try { await setGuests(date, meal, getGuests(date, meal).filter((x) => x !== name)); renderDays(); toast(`${name} 객원 제거`); }
+      catch (e) { console.error(e); toast("제거 실패 😢"); }
+    }
 
     // 일간: 자리 탭 → 본인 아니면 본인 선택, 본인이면 순환(불참→참석→외식→불참)
     async function onSeatClick(name, date) {

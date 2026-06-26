@@ -70,6 +70,13 @@ def build(meal, now):
     present = [m for m in members if attends(status_by.get(m["name"]), meal)]
     absent  = [m for m in members if not attends(status_by.get(m["name"]), meal)]
     eat     = [m for m in present if note_by.get((m["name"], meal + "#eat")) == "1"]
+    guests = []
+    graw = note_by.get(("##guest##", meal), "")
+    if graw:
+        try:
+            guests = json.loads(graw)
+        except Exception:
+            pass
 
     wd = WD[now.weekday()]
     head = f"[{now.month}/{now.day}({wd}) {'저녁' if meal == 'dinner' else '점심'}]"
@@ -79,6 +86,7 @@ def build(meal, now):
         + (f" · 외식 제안 {len(eat)}" if eat else ""),
         "참석: " + (", ".join(m["name"] for m in present) or "-"),
         "불참: " + (", ".join(m["name"] for m in absent) or "-"),
+    ] + (["객원: " + ", ".join(guests)] if guests else []) + [
         f"{APP_LINK}/?g={GROUP_ID}",
     ]
     text = "\n".join(lines)
