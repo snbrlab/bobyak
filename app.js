@@ -731,7 +731,10 @@
           : `<span class="ptag empty"></span>`;
       }).join("");
       if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
-      cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}</div>`;
+      // 초대손님: 멤버 칩 아래로 🙋 칩
+      const gtags = getGuests(date, meal)
+        .map((g) => `<span class="ptag guest-pill">🙋${escapeHtml(g)}</span>`).join("");
+      cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}${gtags}</div>`;
       cell.onclick = () => onDayClick(date);
       return cell;
     }

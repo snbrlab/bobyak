@@ -370,6 +370,8 @@ body {
 .tags .ptag.full { background: var(--c); }
 .tags .ptag.empty { background: transparent; animation: none; }
 .tags .ptag.more { background: transparent !important; color: var(--ink-soft); font-size: .58rem; }
+/* 초대손님 칩 (주간·월간) — 🙋 + 연한 톤으로 멤버랑 구분 */
+.tags .ptag.guest-pill { background: var(--accent-soft); color: var(--accent-deep); font-size: .62rem; }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ---------- 푸터 / 토스트 ---------- */
