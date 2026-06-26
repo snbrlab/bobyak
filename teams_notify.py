@@ -86,7 +86,7 @@ def build(meal, now):
         + (f" · 외식 제안 {len(eat)}" if eat else ""),
         "참석: " + (", ".join(m["name"] for m in present) or "-"),
         "불참: " + (", ".join(m["name"] for m in absent) or "-"),
-    ] + (["객원: " + ", ".join(guests)] if guests else []) + [
+    ] + (["초대손님: " + ", ".join(guests)] if guests else []) + [
         f"{APP_LINK}/?g={GROUP_ID}",
     ]
     text = "\n".join(lines)

@@ -663,7 +663,7 @@
       if (present.length) L.push(`참석: ${present.map((m) => m.name).join(", ")}`);
       if (absent.length) L.push(`불참: ${absent.map((m) => m.name).join(", ")}`);
       const guests = getGuests(date, meal);
-      if (guests.length) L.push(`객원: ${guests.join(", ")}`);
+      if (guests.length) L.push(`초대손님: ${guests.join(", ")}`);
       L.push(link);
       return L.join("\n");
     }
@@ -811,7 +811,7 @@
           <div class="table-center ${allin ? "allin" : ""}">${clockHTML(mu.time, meal)}</div>${seats}
         </div>
         ${guestRow}
-        <div class="table-count">참석 ${cnt}/${members.length}${guests.length ? ` · 객원 ${guests.length}` : ""} · 외식 제안 ${eatCnt}/${members.length}</div>`;
+        <div class="table-count">참석 ${cnt}/${members.length}${guests.length ? ` · 초대손님 ${guests.length}` : ""} · 외식 제안 ${eatCnt}/${members.length}</div>`;
       curDate = date; curMeal = meal; // 공유/객원 버튼이 참조
       applyMat(daysEl); // 돗자리 배경
       const dc = document.getElementById("digiClock");
