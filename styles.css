@@ -372,6 +372,8 @@ body {
 .tags .ptag.more { background: transparent !important; color: var(--ink-soft); font-size: .58rem; }
 /* 초대손님 칩 (주간·월간) — 🙋 + 연한 톤으로 멤버랑 구분 */
 .tags .ptag.guest-pill { background: var(--accent-soft); color: var(--accent-deep); font-size: .62rem; }
+/* 이전 멤버(명단에서 빠짐) 과거 기록 — 흐릿하게 */
+.tags .ptag.former { background: var(--c); opacity: .38; }
 @keyframes pop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ---------- 푸터 / 토스트 ---------- */
@@ -533,6 +535,7 @@ body {
   border-radius: 999px; padding: 1px 9px; margin-top: 1px; box-shadow: 0 1px 3px rgba(0,0,0,.25);
 }
 .seat.absent .seat-main { opacity: .42; }
+.seat.former { opacity: .4; cursor: default; }
 .seat.absent .seat-main .bowl { filter: none; }
 /* 인원 많을 때: 그릇·이름 줄여 안 잘리게 */
 .table-wrap.dense .seat { width: 50px; margin-left: -25px; }

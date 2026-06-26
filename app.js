@@ -491,22 +491,29 @@
       }
     }
 
+    // 이전 멤버 목록(과거 기록 표시용) — notes 재활용
+    function getFormer() { try { return JSON.parse(store.getNote(gid, "##former##", "_", "_") || "[]"); } catch (_) { return []; } }
+    async function setFormer(arr) { await store.setNote(gid, "##former##", "_", "_", arr.length ? JSON.stringify(arr) : ""); }
+
     async function deleteMember(m, idx) {
-      if (!confirm(`'${m.name}' 멤버를 삭제할까요?\n표시한 날짜도 같이 지워져요.`)) return;
+      if (!confirm(`'${m.name}' 님을 명단에서 뺄까요?\n과거 기록은 그대로 남아요.`)) return;
       const removed = members[idx];
       members.splice(idx, 1);
       delete memberByName[m.name];
       try {
         await store.setMembers(gid, members);
-        await store.deleteMemberData(gid, m.name);
+        // 기록은 유지 + 과거 날짜 표시용으로 former 목록에 보관
+        const former = getFormer().filter((f) => f.name !== removed.name);
+        former.push({ name: removed.name, color: removed.color });
+        await setFormer(former);
         if (me === m.name) { me = null; localStorage.removeItem(MEKEY); }
         renderChips(); renderDays();
-        toast(`${m.name} 삭제됨`);
+        toast(`${m.name} 명단에서 뺐어요 (기록 유지)`);
       } catch (e) {
         console.error(e);
         members.splice(idx, 0, removed); memberByName[removed.name] = removed;
         renderChips();
-        toast("삭제 실패 😢");
+        toast("실패 😢");
       }
     }
 
@@ -731,10 +738,14 @@
           : `<span class="ptag empty"></span>`;
       }).join("");
       if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
-      // 초대손님: 멤버 칩 아래로 🙋 칩
+      // 이전 멤버(명단에서 빠진 사람)의 과거 기록 — 흐릿하게
+      const ftags = getFormer()
+        .filter((f) => !memberByName[f.name] && attendsMeal(store.get(gid, f.name, date), meal))
+        .map((f) => `<span class="ptag former" style="--c:${f.color}">${f.name}</span>`).join("");
+      // 초대손님: 🙋 칩
       const gtags = getGuests(date, meal)
         .map((g) => `<span class="ptag guest-pill">🙋${escapeHtml(g)}</span>`).join("");
-      cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}${gtags}</div>`;
+      cell.innerHTML = `<span class="num">${dd}</span><div class="tags">${tags}${ftags}${gtags}</div>`;
       cell.onclick = () => onDayClick(date);
       return cell;
     }
@@ -776,13 +787,15 @@
       $("calTitle").textContent = `${mm + 1}월 ${dd}일 (${wd})${isToday ? " · 오늘" : ""}`;
 
       const meal = currentMeal();
-      const n = members.length;
-      const dense = n > 7;          // 인원 많으면 빽빽 모드
-      const R = dense ? 112 : 120;  // 자리 반경
+      // 이전 멤버 중 그 날 나왔던 사람 (흐릿한 자리로)
+      const formerIn = getFormer().filter((f) => !memberByName[f.name] && attendsMeal(store.get(gid, f.name, date), meal));
+      const total = members.length + formerIn.length;
+      const dense = total > 7;          // 인원 많으면 빽빽 모드
+      const R = dense ? 112 : 120;      // 자리 반경
+      const seatPos = (i) => { const a = (i / total) * 2 * Math.PI - Math.PI / 2; return { x: Math.cos(a) * R, y: Math.sin(a) * R }; };
       let cnt = 0, eatCnt = 0;
-      const seats = members.map((m, i) => {
-        const ang = (i / n) * 2 * Math.PI - Math.PI / 2;
-        const x = Math.cos(ang) * R, y = Math.sin(ang) * R;
+      const memberSeats = members.map((m, i) => {
+        const { x, y } = seatPos(i);
         const on = attendsMeal(store.get(gid, m.name, date), meal);
         if (on) cnt++;
         const eat = on && isEat(m.name, date, meal);
@@ -801,6 +814,13 @@
             <div class="snm" style="background:${m.color}">${m.name}</div>
           </div></div>`;
       }).join("");
+      const formerSeats = formerIn.map((f, j) => {
+        const { x, y } = seatPos(members.length + j);
+        return `<div class="seat former" title="이전 멤버" style="transform:translate(${x}px,${y}px)">
+          <div class="seat-inner"><div class="bowl">🍚</div>
+          <div class="snm" style="background:${f.color}">${f.name}</div></div></div>`;
+      }).join("");
+      const seats = memberSeats + formerSeats;
       const allin = members.length >= 2 && cnt === members.length;
       const mu = getMeetup(date, meal);
       const guests = getGuests(date, meal);
