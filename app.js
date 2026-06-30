@@ -495,6 +495,17 @@
     function getFormer() { try { return JSON.parse(store.getNote(gid, "##former##", "_", "_") || "[]"); } catch (_) { return []; } }
     async function setFormer(arr) { await store.setNote(gid, "##former##", "_", "_", arr.length ? JSON.stringify(arr) : ""); }
 
+    // 다모임(✨) 도장 — 한 번 전원참석이면 기록, 멤버 추가/삭제엔 안 사라지고 '불참 전환' 때만 해제
+    function isAllinStamp(date, meal) { return store.getNote(gid, "##allin##", date, meal) === "1"; }
+    function setAllinStamp(date, meal, on) { store.setNote(gid, "##allin##", date, meal, on ? "1" : "").catch(() => {}); }
+    // 현재 멤버 전원 참석 여부 + 도장 반영
+    function allinFor(date, meal) {
+      const present = members.filter((m) => attendsMeal(store.get(gid, m.name, date), meal)).length;
+      const live = members.length >= 2 && present === members.length;
+      if (live && !isAllinStamp(date, meal)) setAllinStamp(date, meal, true); // 처음 달성 시 도장(기존 데이터도 첫 조회 때 백필)
+      return live || isAllinStamp(date, meal);
+    }
+
     async function deleteMember(m, idx) {
       if (!confirm(`'${m.name}' 님을 명단에서 뺄까요?\n과거 기록은 그대로 남아요.`)) return;
       const removed = members[idx];
@@ -737,7 +748,7 @@
           ? `<span class="ptag full" style="--c:${m.color}">${m.name}</span>`
           : `<span class="ptag empty"></span>`;
       }).join("");
-      if (members.length >= 2 && presentCount === members.length) cell.classList.add("allin");
+      if (allinFor(date, meal)) cell.classList.add("allin");
       // 이전 멤버(명단에서 빠진 사람)의 과거 기록 — 흐릿하게
       const ftags = getFormer()
         .filter((f) => !memberByName[f.name] && attendsMeal(store.get(gid, f.name, date), meal))
@@ -821,7 +832,7 @@
           <div class="snm" style="background:${f.color}">${f.name}</div></div></div>`;
       }).join("");
       const seats = memberSeats + formerSeats;
-      const allin = members.length >= 2 && cnt === members.length;
+      const allin = allinFor(date, meal);
       const mu = getMeetup(date, meal);
       const guests = getGuests(date, meal);
       const guestRow = guests.length
@@ -926,6 +937,7 @@
         } else {
           await setEat(me, date, meal, false);
           await store.setStatus(gid, me, date, toggledMeal(store.get(gid, me, date), meal));
+          setAllinStamp(date, meal, false); // 빠지면 다모임 도장 해제
           toast(`${date} ${ml} 불참`);
         }
         renderDays();
@@ -941,6 +953,7 @@
       const ml = meal === "dinner" ? "저녁 🌙" : "점심 🌞";
       try {
         await store.setStatus(gid, me, date, next);
+        if (!attendsMeal(next, meal)) setAllinStamp(date, meal, false); // 빠지면 다모임 도장 해제
         renderDays();
         toast(attendsMeal(next, meal) ? `${date} ${ml} 참석 ✓` : `${date} ${ml} 불참`);
       } catch (e) {
